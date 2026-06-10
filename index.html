@@ -126,11 +126,12 @@ function parseInits(t){
     var g=gm?gm[1]:"";if(!GOALS[g])return acc;
     var q3s=get(row,"Q3 2026 Status","Q3 Status"),q2s=get(row,"Q2 2026 Status","Q2 Status");
     var status=parseSt(q3s)||parseSt(q2s);
-    // Exclude Complete, Concept, and Eliminated from capacity dashboard
-    if(status==="Complete"||status==="Concept"||status==="Eliminated")return acc;
+    // Exclude Complete, Concept, Eliminated, and Backlogged from capacity dashboard
+    if(status==="Complete"||status==="Concept"||status==="Eliminated"||status==="Backlogged")return acc;
     acc.push({id,name,goal:g,status,
       isNew:/^new\b/i.test(get(row,"Project Type","Type")),
       objOwner:get(row,"Obj Owner","Objective Owner","Owner"),
+      poc:get(row,"POC or PdM","POC","PdM"),
       objName:get(row,"Objective Name","Obj Name")});
     return acc;
   },[]);
@@ -331,11 +332,12 @@ function DrillPanel({item,onClose}){
           </div>
 
           {/* People */}
-          {(init.objOwner||init.objName)&&(
+          {(init.objOwner||init.poc||init.objName)&&(
             <div style={{padding:"12px 18px"}}>
               <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:8}}>People</div>
               <div style={{display:"grid",gridTemplateColumns:"90px 1fr",gap:"5px 10px",fontSize:11.5}}>
                 {init.objOwner&&<><span style={{color:"#aaa"}}>Obj. Owner</span><span style={{color:"#333"}}>{init.objOwner}</span></>}
+                {init.poc&&<><span style={{color:"#aaa"}}>POC / PdM</span><span style={{color:"#333"}}>{init.poc}</span></>}
                 {init.objName&&<><span style={{color:"#aaa"}}>Objective</span><span style={{color:"#333",fontSize:11}}>{init.objName}</span></>}
               </div>
             </div>

@@ -443,72 +443,78 @@ function App(){
   return(
     <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#e8ebef"}}>
 
-      {/* ── STICKY TOP SECTION (header → tiles → filter → column headers all in one block) ── */}
+      {/* ── STICKY TOP SECTION — header + tiles merged, slim filter, tight column headers ── */}
       <div style={{flexShrink:0,background:"#1e2a3a",boxShadow:"0 2px 8px rgba(0,0,0,.18)"}}>
 
-        {/* Dark header bar */}
-        <div style={{padding:"10px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid #2d3e52"}}>
-          <div>
-            <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:1.2,color:"#7a9ab8",fontWeight:600}}>NIH · <em>All of Us</em> Research Program · Q3 2026</div>
-            <div style={{fontSize:16,fontWeight:700,color:"#fff",marginTop:2}}>Capacity Planning Dashboard</div>
+        {/* Row 1: Title LEFT · Metric tiles RIGHT — all in one bar */}
+        <div style={{padding:"7px 20px",display:"flex",alignItems:"center",gap:16,borderBottom:"1px solid #2d3e52"}}>
+          {/* Title */}
+          <div style={{flexShrink:0}}>
+            <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:1.2,color:"#7a9ab8",fontWeight:600,lineHeight:1}}>NIH · <em>All of Us</em> · Q3 2026</div>
+            <div style={{fontSize:15,fontWeight:700,color:"#fff",lineHeight:1.2,marginTop:2}}>Capacity Planning Dashboard</div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <span style={{fontSize:10,color:loadState==="live"?"#58d68d":"#7a9ab8"}}>
+
+          {/* Divider */}
+          <div style={{width:1,height:32,background:"rgba(255,255,255,.1)",flexShrink:0}}/>
+
+          {/* Metric tiles — compact inline */}
+          <div style={{display:"flex",gap:4,alignItems:"center",flex:1}}>
+            {[
+              {label:"Total",val:health.total,sub:"initiatives",col:"#c8d8e8",k:"all",noFilter:true},
+              {label:"🟢 On Track",val:health.high,sub:"CI 8–10",col:"#58d68d",k:"high"},
+              {label:"🟡 Monitor",val:health.med,sub:"CI 6–7",col:"#f9ca24",k:"med"},
+              {label:"🔴 At Risk",val:health.risk,sub:"CI ≤ 5",col:"#e74c3c",k:"risk"},
+              {label:"⚪ No Data",val:health.noData,sub:"awaiting",col:"#7a9ab8",k:"none"},
+            ].map(function(t){
+              var active=tierFilter===t.k&&!t.noFilter;
+              return(
+                <div key={t.label} onClick={function(){if(!t.noFilter)setTierFilter(tierFilter===t.k?"all":t.k);}}
+                  style={{padding:"4px 12px",background:active?"rgba(255,255,255,.15)":"rgba(255,255,255,.06)",border:"1px solid "+(active?"rgba(255,255,255,.3)":"rgba(255,255,255,.08)"),borderRadius:6,textAlign:"center",cursor:t.noFilter?"default":"pointer",transition:"all .12s",minWidth:68}}>
+                  <div style={{fontSize:8,textTransform:"uppercase",letterSpacing:.4,color:t.col,fontWeight:600,opacity:.8,whiteSpace:"nowrap"}}>{t.label}</div>
+                  <div style={{fontSize:18,fontWeight:800,color:t.col,lineHeight:1.1}}>{t.val}</div>
+                  <div style={{fontSize:8,color:t.col,opacity:.5,marginTop:1}}>{t.sub}</div>
+                </div>
+              );
+            })}
+            {health.avg!=null&&(
+              <div style={{padding:"4px 12px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)",borderRadius:6,textAlign:"center",minWidth:68}}>
+                <div style={{fontSize:8,textTransform:"uppercase",letterSpacing:.4,color:"#7a9ab8",fontWeight:600,opacity:.8}}>Avg CI</div>
+                <div style={{fontSize:18,fontWeight:800,color:health.avg>=8?"#58d68d":health.avg>=6?"#f9ca24":"#e74c3c",lineHeight:1.1}}>{health.avg}</div>
+                <div style={{fontSize:8,color:"#7a9ab8",opacity:.5,marginTop:1}}>program avg</div>
+              </div>
+            )}
+          </div>
+
+          {/* Live + refresh — far right */}
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <span style={{fontSize:10,color:loadState==="live"?"#58d68d":"#7a9ab8",whiteSpace:"nowrap"}}>
               {loadState==="live"?"● Live · "+loadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}
             </span>
-            <button onClick={loadAll} style={{fontSize:11,padding:"4px 12px",border:"1px solid #3a5068",borderRadius:5,background:"transparent",color:"#a8c4d8",cursor:"pointer"}}>↻ Refresh</button>
+            <button onClick={loadAll} style={{fontSize:10,padding:"3px 10px",border:"1px solid #3a5068",borderRadius:4,background:"transparent",color:"#a8c4d8",cursor:"pointer",whiteSpace:"nowrap"}}>↻ Refresh</button>
           </div>
         </div>
 
-        {/* Health tiles — dark-themed to maintain the sticky band */}
-        <div style={{padding:"8px 20px",display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",borderBottom:"1px solid #2d3e52"}}>
-          {[
-            {label:"Total",val:health.total,sub:"initiatives",col:"#c8d8e8",k:"all",noFilter:true},
-            {label:"🟢 On Track",val:health.high,sub:"CI 8–10",col:"#58d68d",k:"high"},
-            {label:"🟡 Monitor",val:health.med,sub:"CI 6–7",col:"#f9ca24",k:"med"},
-            {label:"🔴 At Risk",val:health.risk,sub:"CI ≤ 5",col:"#e74c3c",k:"risk"},
-            {label:"⚪ No Data",val:health.noData,sub:"awaiting",col:"#7a9ab8",k:"none"},
-          ].map(function(t){
-            var active=tierFilter===t.k&&!t.noFilter;
-            return(
-              <div key={t.label} onClick={function(){if(!t.noFilter)setTierFilter(tierFilter===t.k?"all":t.k);}}
-                style={{padding:"6px 14px",background:active?"rgba(255,255,255,.12)":"rgba(255,255,255,.05)",border:"1px solid "+(active?"rgba(255,255,255,.25)":"rgba(255,255,255,.08)"),borderRadius:7,minWidth:80,textAlign:"center",cursor:t.noFilter?"default":"pointer",transition:"all .12s"}}>
-                <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:.4,color:t.col,fontWeight:600,opacity:.85}}>{t.label}</div>
-                <div style={{fontSize:20,fontWeight:800,color:t.col,lineHeight:1.1,marginTop:1}}>{t.val}</div>
-                <div style={{fontSize:8.5,color:t.col,opacity:.55,marginTop:1}}>{t.sub}</div>
-              </div>
-            );
-          })}
-          {health.avg!=null&&(
-            <div style={{padding:"6px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:7,minWidth:80,textAlign:"center"}}>
-              <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:.4,color:"#7a9ab8",fontWeight:600,opacity:.85}}>Avg CI</div>
-              <div style={{fontSize:20,fontWeight:800,color:health.avg>=8?"#58d68d":health.avg>=6?"#f9ca24":"#e74c3c",lineHeight:1.1,marginTop:1}}>{health.avg}</div>
-              <div style={{fontSize:8.5,color:"#7a9ab8",opacity:.55,marginTop:1}}>program avg</div>
-            </div>
-          )}
-        </div>
-
-        {/* Filter bar — still in the dark band */}
-        <div style={{padding:"7px 20px",display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",borderBottom:"1px solid #2d3e52",background:"#263547"}}>
-          <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7a9ab8"}}>Filter</span>
+        {/* Row 2: Filter bar — slim */}
+        <div style={{padding:"5px 20px",display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",borderBottom:"1px solid #2d3e52",background:"#263547"}}>
+          <span style={{fontSize:8.5,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7a9ab8",marginRight:2}}>Filter</span>
           {[{k:"all",l:"All"},{k:"risk",l:"🔴 At Risk"},{k:"med",l:"🟡 Monitor"},{k:"high",l:"🟢 On Track"},{k:"none",l:"⚪ Awaiting"}].map(function(f){
-            return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
+            return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} style={{padding:"2px 8px",fontSize:10.5}} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
           })}
-          <div style={{width:1,height:16,background:"rgba(255,255,255,.1)",margin:"0 4px"}}/>
-          <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} className="sort-sel">
+          <div style={{width:1,height:14,background:"rgba(255,255,255,.1)",margin:"0 3px"}}/>
+          <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} className="sort-sel" style={{fontSize:10.5,padding:"2px 7px"}}>
             <option value="all">All Goals</option>
             {Object.keys(GOALS).map(function(k){return<option key={k} value={k}>G{GOALS[k].num}: {GOALS[k].short}</option>;})}
           </select>
           <div style={{flex:1}}/>
           <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="🔍  Search…"
-            style={{fontSize:11,padding:"4px 10px",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,width:180,background:"rgba(255,255,255,.08)",color:"#fff"}}/>
+            style={{fontSize:10.5,padding:"3px 9px",border:"1px solid rgba(255,255,255,.15)",borderRadius:10,width:160,background:"rgba(255,255,255,.08)",color:"#fff"}}/>
           {(search||goalFilter!=="all"||tierFilter!=="all")&&
             <button onClick={function(){setSearch("");setGoalFilter("all");setTierFilter("all");}}
-              style={{fontSize:11,background:"none",border:"none",color:"#e74c3c",cursor:"pointer",fontWeight:600}}>✕ Clear</button>}
-          <span style={{fontSize:10,color:"#7a9ab8",marginLeft:4}}>{filtered.length} of {health.total}</span>
+              style={{fontSize:10.5,background:"none",border:"none",color:"#e74c3c",cursor:"pointer",fontWeight:600}}>✕</button>}
+          <span style={{fontSize:9.5,color:"#7a9ab8",marginLeft:2}}>{filtered.length} of {health.total}</span>
         </div>
 
-        {/* Column headers — bottom of the sticky band, visually connected */}
+        {/* Row 3: Column headers */}
         <div style={{overflow:"hidden"}}>
           <table className="tbl" style={{tableLayout:"fixed",width:"100%"}}>
             <ColGroup/>
@@ -518,10 +524,9 @@ function App(){
                   var isActive=sortState.col===c.key;
                   return(
                     <th key={i} className={c.nosort?"nosort":""}
-                      style={{position:"static",borderTop:"none",padding:c.key==="stripe"?"0":"7px 8px",cursor:c.nosort?"default":"pointer"}}
+                      style={{position:"static",borderTop:"none",padding:c.key==="stripe"?"0":"5px 8px",cursor:c.nosort?"default":"pointer",fontSize:9.5}}
                       onClick={c.nosort?undefined:function(){toggleSort(c.key);}}>
-                      {c.th}
-                      {!c.nosort&&isActive&&<span style={{opacity:.7}}>{sortState.dir==="asc"?" ↑":" ↓"}</span>}
+                      {c.th}{!c.nosort&&isActive&&<span style={{opacity:.7}}>{sortState.dir==="asc"?" ↑":" ↓"}</span>}
                     </th>
                   );
                 })}

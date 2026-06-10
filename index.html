@@ -9,33 +9,29 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#eef0f3;color:#1a1a1a;overflow:hidden;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#e8ebef;color:#1a1a1a;overflow:hidden;}
 button,select,input{font-family:inherit;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Table */
-.tbl{width:100%;border-collapse:collapse;font-size:12px;}
-.tbl th{background:#1e2a3a;color:#c8d4e0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:7px 10px;white-space:nowrap;position:sticky;top:0;z-index:5;border-right:1px solid #2d3e52;cursor:pointer;user-select:none;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+.tbl th{background:#1e2a3a;color:#b8c8d8;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.55px;padding:7px 8px;white-space:nowrap;border-right:1px solid #2d3e52;cursor:pointer;user-select:none;overflow:hidden;text-overflow:ellipsis;}
 .tbl th:hover{background:#263547;color:#fff;}
+.tbl th.nosort{cursor:default;}
 .tbl th:last-child{border-right:none;}
-.tbl td{padding:6px 10px;border-bottom:1px solid #e8eaed;border-right:1px solid #f0f0f0;vertical-align:middle;white-space:nowrap;}
+.tbl td{padding:5px 8px;border-bottom:1px solid #e4e8ed;border-right:1px solid #eff1f4;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .tbl td:last-child{border-right:none;}
-.tbl tr:hover td{background:#f4f7fb !important;}
-.tbl tr:nth-child(even) td{background:#fafbfc;}
-.tbl tr:nth-child(odd) td{background:#fff;}
-
-/* Sort indicator */
-.sort-asc::after{content:" ↑";opacity:.7;}
-.sort-desc::after{content:" ↓";opacity:.7;}
-
-/* Chips */
+.tbl-body tr:hover td{background:#edf3fb !important;}
+.tbl-body tr:nth-child(even) td{background:#f9fafb;}
+.tbl-body tr:nth-child(odd) td{background:#fff;}
 .chip{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;white-space:nowrap;}
-.ci-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;}
-.filter-btn{font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;background:#fff;cursor:pointer;color:#555;transition:all .12s;}
-.filter-btn:hover,.filter-btn.active{background:#1e2a3a;border-color:#1e2a3a;color:#fff;}
-.sort-sel{font-size:11px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#555;cursor:pointer;}
+.ci-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;}
+.filter-btn{font-size:11px;padding:3px 9px;border:1px solid #cfd5de;border-radius:12px;background:#fff;cursor:pointer;color:#555;transition:all .1s;line-height:1.4;}
+.filter-btn:hover{background:#1e2a3a;border-color:#1e2a3a;color:#fff;}
+.filter-btn.active{background:#1e2a3a;border-color:#1e2a3a;color:#fff;font-weight:600;}
+.sort-sel{font-size:11px;padding:3px 8px;border:1px solid #cfd5de;border-radius:6px;background:#fff;color:#555;cursor:pointer;}
+.sort-asc th.active::after{content:" ↑";opacity:.7;}
+.sort-desc th.active::after{content:" ↓";opacity:.7;}
 </style>
 </head>
 <body>
@@ -62,18 +58,29 @@ const STATUS_CFG = {
   Complete:{bg:"#D5F5E3",tx:"#1E8449"},
 };
 
-function ciTier(n){
-  if(n==null)return"none";
-  if(n>=8)return"high";
-  if(n>=6)return"med";
-  return"risk";
-}
+// Teams in order matching calculations tab columns N onward (5 cols each)
+const TEAMS = [
+  "Chief of Staff","COO","DCD","DMSR","DMSR (ODA)","Engagement","TPC","OFM",
+  "Innovation","Policy","Product","UX","DTPD","BioBank",
+  "DRC: Analytics","DRC: Curation","DRC: RDR","DRC: HealthPro","DRC: Public","DRC: Workbench",
+  "PPSC: NORC","PPSC: IBM","PPSC: Support Center"
+];
+const TEAM_COL_START = 13; // index 0-based in CSV row (column N in sheet)
+
+const LOE_LABEL = {"1":"XS","2":"S","3":"M","5":"L","8":"XL","13":"XXL","21":"XXXL"};
+const STAFF_CFG = {
+  "D":{label:"Definitely",color:"#1E8449",bg:"#eafaf1"},
+  "P":{label:"Possibly",color:"#B7950B",bg:"#fefaec"},
+  "N":{label:"No Capacity",color:"#C0392B",bg:"#fdf2f2"},
+};
+
+function ciTier(n){if(n==null)return"none";if(n>=8)return"high";if(n>=6)return"med";return"risk";}
 function ciStyle(n){
   var t=ciTier(n);
-  if(t==="high")return{bg:"#D5F5E3",tx:"#1a6b3a",dot:"#1E8449"};
-  if(t==="med") return{bg:"#FEF9E7",tx:"#7D6008",dot:"#F1C40F"};
-  if(t==="risk")return{bg:"#FDECEA",tx:"#922b21",dot:"#C0392B"};
-  return{bg:"#f0f0f0",tx:"#999",dot:"#ccc"};
+  if(t==="high")return{bg:"#eafaf1",tx:"#1a6b3a",dot:"#1E8449"};
+  if(t==="med") return{bg:"#fefaec",tx:"#7D6008",dot:"#F1C40F"};
+  if(t==="risk")return{bg:"#fdf2f2",tx:"#922b21",dot:"#C0392B"};
+  return{bg:"#f4f4f4",tx:"#888",dot:"#ccc"};
 }
 
 function cacheBust(u){return u+(u.includes("?")?"&":"?")+"_="+Date.now();}
@@ -94,21 +101,19 @@ function parseCSV(text){
 function nh(h){return String(h||"").toLowerCase().replace(/[\r\n]+/g," ").replace(/\s+/g," ").trim();}
 function makeGet(hdr){
   var n=hdr.map(nh);
-  return function(row){
-    for(var k=1;k<arguments.length;k++){var idx=n.indexOf(nh(arguments[k]));if(idx!==-1&&row[idx]!=null&&String(row[idx]).trim()!=="")return String(row[idx]).trim();}
-    return"";
-  };
+  return function(row){for(var k=1;k<arguments.length;k++){var idx=n.indexOf(nh(arguments[k]));if(idx!==-1&&row[idx]!=null&&String(row[idx]).trim()!=="")return String(row[idx]).trim();}return"";};
 }
-function findHdr(rows){
-  for(var i=0;i<Math.min(5,rows.length);i++){var n=rows[i].map(nh);if(n.includes("id")&&(n.includes("initiative name")||n.includes("name")))return i;}
-  return 0;
-}
+function findHdr(rows){for(var i=0;i<Math.min(6,rows.length);i++){var n=rows[i].map(nh);if(n.includes("id")&&(n.includes("initiative name")||n.includes("name")))return i;}return 0;}
+
 function parseSt(r){
   if(!r)return null;
-  if(/proposed/i.test(r))return"Proposed";
-  if(/committed/i.test(r))return"Committed";
-  if(/backlog/i.test(r))return"Backlogged";
-  if(/complete/i.test(r))return"Complete";
+  var s=String(r);
+  if(/concept/i.test(s)&&/committed/i.test(s))return"Concept";
+  if(/proposed/i.test(s))return"Proposed";
+  if(/committed/i.test(s))return"Committed";
+  if(/backlog/i.test(s))return"Backlogged";
+  if(/complete/i.test(s))return"Complete";
+  if(/eliminat/i.test(s))return"Eliminated";
   return null;
 }
 
@@ -119,7 +124,11 @@ function parseInits(t){
     if(!id||!name)return acc;
     var gm=String(get(row,"5 year Goal","Goal","5-year Goal")).match(/(\d)/);
     var g=gm?gm[1]:"";if(!GOALS[g])return acc;
-    acc.push({id,name,goal:g,status:parseSt(get(row,"Q3 2026 Status","Q3 Status"))||parseSt(get(row,"Q2 2026 Status","Q2 Status")),
+    var q3s=get(row,"Q3 2026 Status","Q3 Status"),q2s=get(row,"Q2 2026 Status","Q2 Status");
+    var status=parseSt(q3s)||parseSt(q2s);
+    // Exclude Complete, Concept, and Eliminated from capacity dashboard
+    if(status==="Complete"||status==="Concept"||status==="Eliminated")return acc;
+    acc.push({id,name,goal:g,status,
       isNew:/^new\b/i.test(get(row,"Project Type","Type")),
       objOwner:get(row,"Obj Owner","Objective Owner","Owner"),
       objName:get(row,"Objective Name","Obj Name")});
@@ -138,11 +147,27 @@ function parseCap(t){
     var lbl=String(row[2]||"").trim();
     var cm=lbl.match(/(\d+)/);
     function int(k){return parseInt(get(row,k))||0;}
+
+    // Extract per-team detail from columns N onward (index 13+)
+    var performers=[];
+    TEAMS.forEach(function(name,i){
+      var base=TEAM_COL_START+(i*5);
+      if(base>=row.length)return;
+      var isPerformer=String(row[base]||"").trim()==="1";
+      if(!isPerformer)return;
+      var q3loe=String(row[base+1]||"").trim();
+      var totalLoe=String(row[base+2]||"").trim();
+      var staff=String(row[base+3]||"").trim();
+      var notes=String(row[base+4]||"").trim();
+      performers.push({name,q3loe,totalLoe,staff,notes});
+    });
+
     map[id]={cf:isNaN(cf)?0:cf,lbl,ciNum:cm?parseInt(cm[1]):null,
       performers:int("Performers"),committed:int("Committed"),
       posXS:int("Possibly - XS"),posS:int("Possibly - S"),posM:int("Possibly - M"),
       posL:int("Possibly - L"),posXL:int("Possibly - XL"),
-      noCapacity:int("No Capacity Remaining"),notPerforming:int("Not Performing")};
+      noCapacity:int("No Capacity Remaining"),notPerforming:int("Not Performing"),
+      teams:performers};
   });
   return map;
 }
@@ -160,7 +185,7 @@ function parseGoals(t){
   return map;
 }
 
-// Error boundary
+// EBC
 function EBC(p){React.Component.call(this,p);this.state={err:null};}
 EBC.prototype=Object.create(React.Component.prototype);
 EBC.prototype.constructor=EBC;
@@ -170,34 +195,24 @@ EBC.prototype.render=function(){
   return this.props.children;
 };
 
-const {useState,useMemo,useEffect,useRef} = React;
+const {useState,useMemo,useEffect} = React;
 
-// Mini staffing bar
+// ── Mini staffing bar ──────────────────────────────────────────────────────────
 function MiniBar({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#ccc",fontSize:10}}>awaiting</span>;
-  var tot=cap.performers;
-  var segs=[
-    {n:cap.committed,c:"#1E8449"},
-    {n:cap.posS,c:"#58D68D"},
-    {n:cap.posM,c:"#F9E79F"},
-    {n:cap.posL,c:"#F0B27A"},
-    {n:cap.noCapacity,c:"#E74C3C"},
-  ];
+  var segs=[{n:cap.committed,c:"#1E8449"},{n:cap.posS,c:"#58D68D"},{n:cap.posM,c:"#F9E79F"},{n:cap.posL,c:"#F0B27A"},{n:cap.noCapacity,c:"#E74C3C"}];
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:2}}>
-      <div style={{display:"flex",height:6,borderRadius:2,overflow:"hidden",background:"#eee",width:80}}>
-        {segs.map(function(s,i){return s.n>0?<div key={i} style={{flexGrow:s.n,background:s.c}}/>:null;})}
-      </div>
+    <div style={{display:"flex",height:7,borderRadius:2,overflow:"hidden",background:"#e8e8e8",width:76}}>
+      {segs.map(function(s,i){return s.n>0?<div key={i} style={{flexGrow:s.n,background:s.c}}/>:null;})}
     </div>
   );
 }
 
-// Staffing counts inline
 function StaffCounts({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#bbb",fontSize:10}}>—</span>;
   var pos=cap.posXS+cap.posS+cap.posM+cap.posL+cap.posXL;
   return(
-    <span style={{display:"inline-flex",gap:6,fontSize:11,fontWeight:600}}>
+    <span style={{display:"inline-flex",gap:5,fontSize:11,fontWeight:600,letterSpacing:.2}}>
       {cap.committed>0&&<span style={{color:"#1E8449"}}>✓{cap.committed}</span>}
       {pos>0&&<span style={{color:"#B7950B"}}>~{pos}</span>}
       {cap.noCapacity>0&&<span style={{color:"#C0392B"}}>✗{cap.noCapacity}</span>}
@@ -205,90 +220,123 @@ function StaffCounts({cap}){
   );
 }
 
-// Drill panel
+// ── Drill panel ───────────────────────────────────────────────────────────────
 function DrillPanel({item,onClose}){
-  var {init,cap}=item;
+  var init=item.init,cap=item.cap;
   var g=GOALS[init.goal];
   var cs=ciStyle(cap?cap.ciNum:null);
-  var pos=cap?(cap.posXS+cap.posS+cap.posM+cap.posL+cap.posXL):0;
+  var sc=STATUS_CFG[init.status];
+
+  // Group teams by staffing commitment
+  var byStaff={D:[],P:[],N:[]};
+  if(cap&&cap.teams){
+    cap.teams.forEach(function(t){
+      if(byStaff[t.staff])byStaff[t.staff].push(t);
+    });
+  }
+
   return(
     <div style={{position:"fixed",inset:0,zIndex:900,display:"flex",justifyContent:"flex-end"}}>
-      <div onClick={onClose} style={{flex:1,background:"rgba(0,0,0,.25)"}}/>
-      <div style={{width:440,background:"#fff",borderLeft:"1px solid #ddd",boxShadow:"-4px 0 20px rgba(0,0,0,.12)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        {/* Header */}
-        <div style={{padding:"14px 18px",borderBottom:"1px solid #ececec",background:"#1e2a3a",flexShrink:0}}>
+      <div onClick={onClose} style={{flex:1,background:"rgba(0,0,0,.22)"}}/>
+      <div style={{width:460,background:"#fff",borderLeft:"1.5px solid #cdd2da",boxShadow:"-4px 0 24px rgba(0,0,0,.12)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+        {/* Panel header */}
+        <div style={{background:"#1e2a3a",padding:"14px 18px",flexShrink:0}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:10,color:"#7a9ab8",fontFamily:"monospace",marginBottom:4}}>{init.id} · {g?("G"+g.num+" "+g.name):""}</div>
+              <div style={{fontSize:10,color:"#7a9ab8",fontFamily:"monospace",marginBottom:4}}>
+                {init.id} {g?"· G"+g.num+" "+g.name:""}
+              </div>
               <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.3}}>{init.name}</div>
             </div>
-            <button onClick={onClose} style={{border:"none",background:"none",color:"#aaa",fontSize:20,cursor:"pointer",padding:0}}>×</button>
+            <button onClick={onClose} style={{border:"none",background:"none",color:"#7a9ab8",fontSize:20,cursor:"pointer",lineHeight:1,padding:0}}>×</button>
           </div>
           <div style={{display:"flex",gap:4,marginTop:10,flexWrap:"wrap"}}>
-            {init.status&&<span className="chip" style={{background:STATUS_CFG[init.status]?STATUS_CFG[init.status].bg:"#eee",color:STATUS_CFG[init.status]?STATUS_CFG[init.status].tx:"#666"}}>{init.status}</span>}
+            {init.status&&sc&&<span className="chip" style={{background:sc.bg,color:sc.tx}}>{init.status}</span>}
             {init.isNew&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800"}}>NEW</span>}
           </div>
         </div>
 
-        <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
-          {/* CI card */}
-          <div style={{padding:"14px",borderRadius:8,background:cs.bg,border:"1px solid "+cs.dot+"44",marginBottom:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+        <div style={{flex:1,overflowY:"auto"}}>
+
+          {/* CI hero */}
+          <div style={{padding:"14px 18px",borderBottom:"1px solid #eeeff2",background:cs.bg}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <div>
-                <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:cs.tx,fontWeight:600,marginBottom:4,opacity:.7}}>{cap?cap.lbl:"Confidence Index"}</div>
-                <div style={{fontSize:32,fontWeight:800,color:cs.tx,lineHeight:1}}>{cap&&cap.ciNum!=null?cap.ciNum:"—"}<span style={{fontSize:14,fontWeight:400,opacity:.5}}>/10</span></div>
+                <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.5,color:cs.tx,fontWeight:700,opacity:.7,marginBottom:3}}>{cap?cap.lbl:"Confidence Index"}</div>
+                <div style={{fontSize:34,fontWeight:800,color:cs.tx,lineHeight:1}}>{cap&&cap.ciNum!=null?cap.ciNum:"—"}<span style={{fontSize:15,fontWeight:400,opacity:.4}}>/10</span></div>
               </div>
               <div style={{textAlign:"right"}}>
-                <div style={{fontSize:24,fontWeight:700,color:cs.tx}}>{cap?Math.round(cap.cf*100):0}%</div>
-                <div style={{fontSize:10,color:cs.tx,opacity:.7}}>{cap?cap.performers:0} team{cap&&cap.performers!==1?"s":""}</div>
+                <div style={{fontSize:26,fontWeight:700,color:cs.tx}}>{cap?Math.round(cap.cf*100):0}%</div>
+                <div style={{fontSize:10,color:cs.tx,opacity:.7}}>{cap?cap.performers:0} performer{cap&&cap.performers!==1?"s":""}</div>
               </div>
             </div>
-            <div style={{height:8,borderRadius:4,background:cs.tx+"22",overflow:"hidden"}}>
-              <div style={{height:"100%",width:(cap?Math.round(cap.cf*100):0)+"%",background:cs.dot,borderRadius:4}}/>
+            <div style={{height:7,borderRadius:3,background:cs.tx+"28",overflow:"hidden"}}>
+              <div style={{height:"100%",width:(cap?Math.round(cap.cf*100):0)+"%",background:cs.dot,borderRadius:3,transition:"width .4s"}}/>
             </div>
           </div>
 
-          {/* Breakdown table */}
-          {cap&&cap.performers?(
-            <div style={{marginBottom:14,border:"1px solid #ececec",borderRadius:6,overflow:"hidden"}}>
-              <div style={{padding:"8px 12px",background:"#f8f9fb",borderBottom:"1px solid #ececec",fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#999",fontWeight:600}}>Staffing breakdown</div>
-              {[
-                {label:"Definitely committed",icon:"✓",n:cap.committed,col:"#1E8449",weight:"+1.0",note:"Full confidence"},
-                {label:"Possibly — S",icon:"~",n:cap.posS,col:"#27AE60",weight:"+0.8",note:"Low risk"},
-                {label:"Possibly — M",icon:"~",n:cap.posM,col:"#B7950B",weight:"0",note:"Neutral"},
-                {label:"Possibly — L",icon:"~",n:cap.posL,col:"#E67E22",weight:"−0.5",note:"Risk signal"},
-                {label:"Possibly — XL",icon:"~",n:cap.posXL,col:"#C0392B",weight:"−0.5",note:"Risk signal"},
-                {label:"No capacity",icon:"✗",n:cap.noCapacity,col:"#C0392B",weight:"−1.0",note:"Strongest risk"},
-              ].filter(function(r){return r.n>0;}).map(function(r,i){
-                return(
-                  <div key={i} style={{display:"grid",gridTemplateColumns:"20px 1fr auto auto",gap:8,padding:"7px 12px",borderBottom:"1px solid #f5f5f5",alignItems:"center",fontSize:11.5}}>
-                    <span style={{color:r.col,fontWeight:700}}>{r.icon}</span>
-                    <span style={{color:"#333"}}>{r.label}</span>
-                    <span style={{color:"#aaa",fontSize:10}}>{r.weight}</span>
-                    <span style={{fontWeight:700,color:r.col,minWidth:16,textAlign:"right"}}>{r.n}</span>
-                  </div>
-                );
-              })}
-              {cap.notPerforming>0&&(
-                <div style={{display:"grid",gridTemplateColumns:"20px 1fr auto auto",gap:8,padding:"7px 12px",alignItems:"center",fontSize:11.5}}>
-                  <span style={{color:"#ccc"}}>–</span>
-                  <span style={{color:"#aaa"}}>Not performing</span>
-                  <span/>
-                  <span style={{color:"#aaa",minWidth:16,textAlign:"right"}}>{cap.notPerforming}</span>
-                </div>
-              )}
+          {/* Performer roster */}
+          <div style={{padding:"14px 18px",borderBottom:"1px solid #eeeff2"}}>
+            <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:10}}>
+              Performers {cap&&cap.teams&&cap.teams.length>0?"("+cap.teams.length+" teams)":""}
             </div>
-          ):(
-            <div style={{padding:"24px",textAlign:"center",color:"#bbb",fontSize:12,fontStyle:"italic",border:"1px solid #ececec",borderRadius:6,marginBottom:14}}>No capacity data submitted yet.</div>
-          )}
+
+            {cap&&cap.teams&&cap.teams.length>0?(
+              <>
+                {["D","P","N"].map(function(staffKey){
+                  var group=byStaff[staffKey];
+                  if(!group||!group.length)return null;
+                  var scfg=STAFF_CFG[staffKey];
+                  return(
+                    <div key={staffKey} style={{marginBottom:10}}>
+                      <div style={{fontSize:10,fontWeight:700,color:scfg.color,marginBottom:5,display:"flex",alignItems:"center",gap:5}}>
+                        {staffKey==="D"?"✓":staffKey==="P"?"~":"✗"} {scfg.label} ({group.length})
+                      </div>
+                      {group.map(function(t,i){
+                        var loeLbl=LOE_LABEL[t.q3loe]||t.q3loe||"—";
+                        var totLbl=LOE_LABEL[t.totalLoe]||t.totalLoe||"—";
+                        return(
+                          <div key={i} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:"0 10px",padding:"5px 10px",marginBottom:2,borderRadius:5,background:scfg.bg,borderLeft:"3px solid "+scfg.color+"55",fontSize:11.5}}>
+                            <span style={{color:"#222",fontWeight:500,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</span>
+                            <span style={{color:"#888",whiteSpace:"nowrap",fontSize:10.5}}>Q3: <strong style={{color:"#444"}}>{loeLbl}</strong></span>
+                            <span style={{color:"#888",whiteSpace:"nowrap",fontSize:10.5}}>3Qtr: <strong style={{color:"#444"}}>{totLbl}</strong></span>
+                            {t.notes&&<div style={{gridColumn:"1/-1",fontSize:10,color:"#888",marginTop:3,fontStyle:"italic",whiteSpace:"normal"}}>{t.notes}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </>
+            ):(
+              <div style={{padding:"20px 0",textAlign:"center",color:"#bbb",fontSize:12,fontStyle:"italic"}}>
+                No performer submissions yet.
+              </div>
+            )}
+          </div>
+
+          {/* Staffing weight explanation */}
+          <div style={{padding:"12px 18px",borderBottom:"1px solid #eeeff2"}}>
+            <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:8}}>Confidence weighting</div>
+            <div style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"5px 10px",fontSize:11}}>
+              {[["✓","Definitely","+1.0","#1E8449"],["~","Possibly — S","+0.8","#27AE60"],["~","Possibly — M","0","#B7950B"],["~","Possibly — L / XL","−0.5","#E67E22"],["✗","No Capacity","−1.0","#C0392B"]].map(function(r,i){
+                return[
+                  <span key={i+"i"} style={{color:r[3],fontWeight:700}}>{r[0]}</span>,
+                  <span key={i+"l"} style={{color:"#555"}}>{r[1]}</span>,
+                  <span key={i+"w"} style={{color:r[3],fontWeight:600,textAlign:"right"}}>{r[2]}</span>
+                ];
+              })}
+            </div>
+          </div>
 
           {/* People */}
           {(init.objOwner||init.objName)&&(
-            <div style={{border:"1px solid #ececec",borderRadius:6,overflow:"hidden"}}>
-              <div style={{padding:"8px 12px",background:"#f8f9fb",borderBottom:"1px solid #ececec",fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#999",fontWeight:600}}>People</div>
-              <div style={{display:"grid",gridTemplateColumns:"90px 1fr",gap:"6px 10px",padding:"10px 12px",fontSize:11.5}}>
-                {init.objOwner&&<><span style={{color:"#aaa"}}>Obj. Owner</span><span>{init.objOwner}</span></>}
-                {init.objName&&<><span style={{color:"#aaa"}}>Objective</span><span style={{fontSize:11}}>{init.objName}</span></>}
+            <div style={{padding:"12px 18px"}}>
+              <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:8}}>People</div>
+              <div style={{display:"grid",gridTemplateColumns:"90px 1fr",gap:"5px 10px",fontSize:11.5}}>
+                {init.objOwner&&<><span style={{color:"#aaa"}}>Obj. Owner</span><span style={{color:"#333"}}>{init.objOwner}</span></>}
+                {init.objName&&<><span style={{color:"#aaa"}}>Objective</span><span style={{color:"#333",fontSize:11}}>{init.objName}</span></>}
               </div>
             </div>
           )}
@@ -298,19 +346,38 @@ function DrillPanel({item,onClose}){
   );
 }
 
+// ── Column width definitions (shared between thead and tbody tables) ──────────
+const COLS = [
+  {w:4,   th:"",           key:"stripe",  nosort:true},
+  {w:62,  th:"Goal",       key:"goal"},
+  {w:null,th:"Initiative", key:"name"},   // flex
+  {w:82,  th:"Status",     key:"status",  nosort:true},
+  {w:88,  th:"Confidence", key:"ci"},
+  {w:76,  th:"Teams",      key:"performers"},
+  {w:88,  th:"Staffing",   key:"committed"},
+  {w:90,  th:"Capacity",   key:"bar",     nosort:true},
+];
+
+function ColGroup(){
+  return(
+    <colgroup>
+      {COLS.map(function(c,i){return <col key={i} style={{width:c.w?c.w+"px":"auto"}}/>;} )}
+    </colgroup>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
 function App(){
   var ist=useState([]);   var inits=ist[0],setInits=ist[1];
   var cst=useState({});   var capMap=cst[0],setCapMap=cst[1];
   var gst=useState({});   var goalsRef=gst[0],setGoalsRef=gst[1];
   var lst=useState("loading"); var loadState=lst[0],setLoadState=lst[1];
-  var ler=useState("");   var loadError=ler[0],setLoadError=ler[1];
+  var ler=useState(""); var loadError=ler[0],setLoadError=ler[1];
   var lat=useState(null); var loadedAt=lat[0],setLoadedAt=lat[1];
   var drl=useState(null); var drill=drl[0],setDrill=drl[1];
-
-  // Filters
   var gfl=useState("all"); var goalFilter=gfl[0],setGoalFilter=gfl[1];
   var tfl=useState("all"); var tierFilter=tfl[0],setTierFilter=tfl[1];
-  var sfl=useState("");   var search=sfl[0],setSearch=sfl[1];
+  var sfl=useState(""); var search=sfl[0],setSearch=sfl[1];
   var srt=useState({col:"ci",dir:"asc"}); var sortState=srt[0],setSortState=srt[1];
 
   function loadAll(){
@@ -323,62 +390,38 @@ function App(){
   }
   useEffect(function(){loadAll();},[]);
 
-  // Join
-  var items=useMemo(function(){
-    return inits.map(function(i){return{init:i,cap:capMap[i.id]||null};});
-  },[inits,capMap]);
+  var items=useMemo(function(){return inits.map(function(i){return{init:i,cap:capMap[i.id]||null};});},[inits,capMap]);
 
-  // Health
   var health=useMemo(function(){
     var h=0,m=0,r=0,nd=0,sum=0,cnt=0;
-    items.forEach(function(x){
-      var n=x.cap?x.cap.ciNum:null;
-      if(n==null){nd++;return;}
-      cnt++;sum+=n;
-      if(n>=8)h++;else if(n>=6)m++;else r++;
-    });
+    items.forEach(function(x){var n=x.cap?x.cap.ciNum:null;if(n==null){nd++;return;}cnt++;sum+=n;if(n>=8)h++;else if(n>=6)m++;else r++;});
     return{high:h,med:m,risk:r,noData:nd,avg:cnt?Math.round(sum/cnt*10)/10:null,total:items.length};
   },[items]);
 
-  // Filter + sort
-  function compareIds(a,b){
-    var ap=String(a).split(".").map(Number),bp=String(b).split(".").map(Number);
-    for(var i=0;i<Math.max(ap.length,bp.length);i++){var av=ap[i]||0,bv=bp[i]||0;if(av!==bv)return av-bv;}
-    return 0;
-  }
+  function compareIds(a,b){var ap=String(a).split(".").map(Number),bp=String(b).split(".").map(Number);for(var i=0;i<Math.max(ap.length,bp.length);i++){var av=ap[i]||0,bv=bp[i]||0;if(av!==bv)return av-bv;}return 0;}
 
   var filtered=useMemo(function(){
     var out=items.filter(function(x){
       if(goalFilter!=="all"&&x.init.goal!==goalFilter)return false;
-      if(tierFilter!=="all"){
-        var t=ciTier(x.cap?x.cap.ciNum:null);
-        if(tierFilter==="none"&&t!=="none")return false;
-        if(tierFilter!=="none"&&t!==tierFilter)return false;
-      }
+      if(tierFilter!=="all"){var t=ciTier(x.cap?x.cap.ciNum:null);if(t!==tierFilter)return false;}
       if(search){var q=search.toLowerCase();if(!x.init.name.toLowerCase().includes(q)&&!x.init.id.includes(q))return false;}
       return true;
     });
-    var col=sortState.col,dir=sortState.dir,asc=dir==="asc";
+    var col=sortState.col,asc=sortState.dir==="asc";
     out.sort(function(a,b){
       var av,bv;
       if(col==="ci"){av=a.cap?a.cap.ciNum??-1:-1;bv=b.cap?b.cap.ciNum??-1:-1;return asc?av-bv:bv-av;}
-      if(col==="id"){var c=compareIds(a.init.id,b.init.id);return asc?c:-c;}
-      if(col==="goal"){av=a.init.goal;bv=b.init.goal;return asc?av.localeCompare(bv):bv.localeCompare(av);}
+      if(col==="id"||col==="name"){var c=asc?compareIds(a.init.id,b.init.id):compareIds(b.init.id,a.init.id);return c;}
+      if(col==="goal"){return asc?a.init.goal.localeCompare(b.init.goal):b.init.goal.localeCompare(a.init.goal);}
       if(col==="performers"){av=a.cap?a.cap.performers:0;bv=b.cap?b.cap.performers:0;return asc?av-bv:bv-av;}
       if(col==="committed"){av=a.cap?a.cap.committed:0;bv=b.cap?b.cap.committed:0;return asc?av-bv:bv-av;}
-      if(col==="name")return asc?a.init.name.localeCompare(b.init.name):b.init.name.localeCompare(a.init.name);
       return 0;
     });
     return out;
   },[items,goalFilter,tierFilter,search,sortState]);
 
-  function toggleSort(col){
-    setSortState(function(p){return{col:col,dir:p.col===col&&p.dir==="asc"?"desc":"asc"};});
-  }
-  function thClass(col){return sortState.col===col?"sort-"+(sortState.dir==="asc"?"asc":"desc"):"";}
-
-  // Attention items
-  var atRisk=useMemo(function(){return items.filter(function(x){return x.cap&&x.cap.ciNum!=null&&x.cap.ciNum<8;}).sort(function(a,b){return(a.cap.ciNum||99)-(b.cap.ciNum||99);});;},[items]);
+  function toggleSort(col){setSortState(function(p){return{col,dir:p.col===col&&p.dir==="asc"?"desc":"asc"};});}
+  function thCls(col){return sortState.col===col?(sortState.dir==="asc"?"sort-asc":"sort-desc"):""; }
 
   var drillItem=drill?items.find(function(x){return x.init.id===drill;}):null;
 
@@ -396,177 +439,143 @@ function App(){
   );
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#eef0f3"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#e8ebef"}}>
 
-      {/* ── Header ── */}
-      <div style={{background:"#1e2a3a",padding:"10px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
-        <div>
-          <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1.2,color:"#7a9ab8",fontWeight:600}}>NIH · <em>All of Us</em> Research Program · Q3 2026</div>
-          <div style={{fontSize:17,fontWeight:700,color:"#fff",marginTop:2}}>Capacity Planning Dashboard</div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <span style={{fontSize:10,color:loadState==="live"?"#58d68d":"#7a9ab8"}}>
-            {loadState==="live"?"● Live · "+loadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}
-          </span>
-          <button onClick={loadAll} style={{fontSize:11,padding:"5px 12px",border:"1px solid #3a5068",borderRadius:5,background:"#263547",color:"#a8c4d8",cursor:"pointer"}}>↻ Refresh</button>
-        </div>
-      </div>
+      {/* ── STICKY TOP SECTION (header → tiles → filter → column headers all in one block) ── */}
+      <div style={{flexShrink:0,background:"#1e2a3a",boxShadow:"0 2px 8px rgba(0,0,0,.18)"}}>
 
-      {/* ── Health tiles ── */}
-      <div style={{background:"#fff",borderBottom:"2px solid #dde1e7",padding:"10px 24px",display:"flex",gap:8,flexShrink:0,alignItems:"center",flexWrap:"wrap"}}>
-        {[
-          {label:"Total",val:health.total,sub:"initiatives",col:"#1e2a3a",bg:"#f7f9fc",border:"#dde1e7"},
-          {label:"🟢 On Track",val:health.high,sub:"CI 8–10",col:"#1a6b3a",bg:"#eafaf1",border:"#82E0AA"},
-          {label:"🟡 Monitor",val:health.med,sub:"CI 6–7",col:"#7D6008",bg:"#fefaec",border:"#F9E79F"},
-          {label:"🔴 At Risk",val:health.risk,sub:"CI ≤ 5",col:"#922b21",bg:"#fdf2f2",border:"#FADBD8"},
-          {label:"⚪ No Data",val:health.noData,sub:"awaiting",col:"#888",bg:"#f8f8f8",border:"#e0e0e0"},
-        ].map(function(t){return(
-          <div key={t.label} style={{padding:"7px 14px",background:t.bg,border:"1px solid "+t.border,borderRadius:7,minWidth:90,textAlign:"center",cursor:t.label!=="Total"&&t.label!=="Avg CI"?"pointer":"default"}}
-            onClick={function(){
-              if(t.label==="🟢 On Track")setTierFilter("high");
-              else if(t.label==="🟡 Monitor")setTierFilter("med");
-              else if(t.label==="🔴 At Risk")setTierFilter("risk");
-              else if(t.label==="⚪ No Data")setTierFilter("none");
-            }}>
-            <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.4,color:t.col,fontWeight:600,opacity:.8}}>{t.label}</div>
-            <div style={{fontSize:22,fontWeight:800,color:t.col,lineHeight:1.1,marginTop:1}}>{t.val}</div>
-            <div style={{fontSize:9,color:t.col,opacity:.6,marginTop:1}}>{t.sub}</div>
+        {/* Dark header bar */}
+        <div style={{padding:"10px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid #2d3e52"}}>
+          <div>
+            <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:1.2,color:"#7a9ab8",fontWeight:600}}>NIH · <em>All of Us</em> Research Program · Q3 2026</div>
+            <div style={{fontSize:16,fontWeight:700,color:"#fff",marginTop:2}}>Capacity Planning Dashboard</div>
           </div>
-        );})}
-        {health.avg!=null&&(
-          <div style={{padding:"7px 14px",background:"#f4f6f8",border:"1px solid #dde1e7",borderRadius:7,minWidth:90,textAlign:"center"}}>
-            <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.4,color:"#555",fontWeight:600,opacity:.8}}>Avg CI</div>
-            <div style={{fontSize:22,fontWeight:800,color:health.avg>=8?"#1a6b3a":health.avg>=6?"#7D6008":"#922b21",lineHeight:1.1,marginTop:1}}>{health.avg}</div>
-            <div style={{fontSize:9,color:"#888",marginTop:1}}>program avg</div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:10,color:loadState==="live"?"#58d68d":"#7a9ab8"}}>
+              {loadState==="live"?"● Live · "+loadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}
+            </span>
+            <button onClick={loadAll} style={{fontSize:11,padding:"4px 12px",border:"1px solid #3a5068",borderRadius:5,background:"transparent",color:"#a8c4d8",cursor:"pointer"}}>↻ Refresh</button>
           </div>
-        )}
+        </div>
 
-        {/* Attention callout */}
-        {atRisk.length>0&&(
-          <div style={{marginLeft:"auto",padding:"8px 14px",background:"#fdf2f2",border:"1px solid #FADBD8",borderRadius:7,maxWidth:360}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#922b21",marginBottom:5}}>⚠ {atRisk.length} initiative{atRisk.length!==1?"s":""} need discussion before QPE</div>
-            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-              {atRisk.slice(0,5).map(function(x){
-                var cs=ciStyle(x.cap.ciNum);
-                return(
-                  <span key={x.init.id} onClick={function(){setDrill(x.init.id);}} style={{fontSize:9.5,padding:"2px 7px",borderRadius:8,background:cs.bg,color:cs.tx,border:"1px solid "+cs.dot+"55",cursor:"pointer",fontWeight:600}}>
-                    {x.init.id} · CI {x.cap.ciNum}
-                  </span>
-                );
-              })}
-              {atRisk.length>5&&<span style={{fontSize:9.5,color:"#922b21",alignSelf:"center"}}>+{atRisk.length-5} more</span>}
+        {/* Health tiles — dark-themed to maintain the sticky band */}
+        <div style={{padding:"8px 20px",display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",borderBottom:"1px solid #2d3e52"}}>
+          {[
+            {label:"Total",val:health.total,sub:"initiatives",col:"#c8d8e8",k:"all",noFilter:true},
+            {label:"🟢 On Track",val:health.high,sub:"CI 8–10",col:"#58d68d",k:"high"},
+            {label:"🟡 Monitor",val:health.med,sub:"CI 6–7",col:"#f9ca24",k:"med"},
+            {label:"🔴 At Risk",val:health.risk,sub:"CI ≤ 5",col:"#e74c3c",k:"risk"},
+            {label:"⚪ No Data",val:health.noData,sub:"awaiting",col:"#7a9ab8",k:"none"},
+          ].map(function(t){
+            var active=tierFilter===t.k&&!t.noFilter;
+            return(
+              <div key={t.label} onClick={function(){if(!t.noFilter)setTierFilter(tierFilter===t.k?"all":t.k);}}
+                style={{padding:"6px 14px",background:active?"rgba(255,255,255,.12)":"rgba(255,255,255,.05)",border:"1px solid "+(active?"rgba(255,255,255,.25)":"rgba(255,255,255,.08)"),borderRadius:7,minWidth:80,textAlign:"center",cursor:t.noFilter?"default":"pointer",transition:"all .12s"}}>
+                <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:.4,color:t.col,fontWeight:600,opacity:.85}}>{t.label}</div>
+                <div style={{fontSize:20,fontWeight:800,color:t.col,lineHeight:1.1,marginTop:1}}>{t.val}</div>
+                <div style={{fontSize:8.5,color:t.col,opacity:.55,marginTop:1}}>{t.sub}</div>
+              </div>
+            );
+          })}
+          {health.avg!=null&&(
+            <div style={{padding:"6px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:7,minWidth:80,textAlign:"center"}}>
+              <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:.4,color:"#7a9ab8",fontWeight:600,opacity:.85}}>Avg CI</div>
+              <div style={{fontSize:20,fontWeight:800,color:health.avg>=8?"#58d68d":health.avg>=6?"#f9ca24":"#e74c3c",lineHeight:1.1,marginTop:1}}>{health.avg}</div>
+              <div style={{fontSize:8.5,color:"#7a9ab8",opacity:.55,marginTop:1}}>program avg</div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* ── Filter / sort bar ── */}
-      <div style={{background:"#f4f6f8",borderBottom:"1px solid #dde1e7",padding:"8px 24px",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
-        <span style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#888"}}>Filter</span>
+        {/* Filter bar — still in the dark band */}
+        <div style={{padding:"7px 20px",display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",borderBottom:"1px solid #2d3e52",background:"#263547"}}>
+          <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7a9ab8"}}>Filter</span>
+          {[{k:"all",l:"All"},{k:"risk",l:"🔴 At Risk"},{k:"med",l:"🟡 Monitor"},{k:"high",l:"🟢 On Track"},{k:"none",l:"⚪ Awaiting"}].map(function(f){
+            return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
+          })}
+          <div style={{width:1,height:16,background:"rgba(255,255,255,.1)",margin:"0 4px"}}/>
+          <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} className="sort-sel">
+            <option value="all">All Goals</option>
+            {Object.keys(GOALS).map(function(k){return<option key={k} value={k}>G{GOALS[k].num}: {GOALS[k].short}</option>;})}
+          </select>
+          <div style={{flex:1}}/>
+          <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="🔍  Search…"
+            style={{fontSize:11,padding:"4px 10px",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,width:180,background:"rgba(255,255,255,.08)",color:"#fff"}}/>
+          {(search||goalFilter!=="all"||tierFilter!=="all")&&
+            <button onClick={function(){setSearch("");setGoalFilter("all");setTierFilter("all");}}
+              style={{fontSize:11,background:"none",border:"none",color:"#e74c3c",cursor:"pointer",fontWeight:600}}>✕ Clear</button>}
+          <span style={{fontSize:10,color:"#7a9ab8",marginLeft:4}}>{filtered.length} of {health.total}</span>
+        </div>
 
-        {/* Tier filter */}
-        {[{k:"all",l:"All"},{k:"risk",l:"🔴 At Risk"},{k:"med",l:"🟡 Monitor"},{k:"high",l:"🟢 On Track"},{k:"none",l:"⚪ No Data"}].map(function(f){
-          return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
-        })}
-
-        <div style={{width:1,height:18,background:"#ddd",margin:"0 4px"}}/>
-
-        {/* Goal filter */}
-        <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} className="sort-sel">
-          <option value="all">All Goals</option>
-          {Object.keys(GOALS).map(function(k){return<option key={k} value={k}>G{GOALS[k].num}: {GOALS[k].short}</option>;})}
-        </select>
-
-        <div style={{flex:1}}/>
-
-        {/* Search */}
-        <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="🔍  Search initiative…"
-          style={{fontSize:11.5,padding:"5px 10px",border:"1px solid #ddd",borderRadius:14,width:200,background:"#fff"}}/>
-
-        {search||goalFilter!=="all"||tierFilter!=="all"?
-          <button onClick={function(){setSearch("");setGoalFilter("all");setTierFilter("all");}}
-            style={{fontSize:11,background:"none",border:"none",color:"#C0392B",cursor:"pointer",fontWeight:600}}>✕ Clear</button>:null}
-
-        <span style={{fontSize:10.5,color:"#999",marginLeft:4}}>
-          {filtered.length} of {health.total}
-        </span>
-      </div>
-
-      {/* ── Table ── */}
-      <div style={{flex:1,overflow:"auto",padding:"12px 24px 16px",background:"#eef0f3"}}>
-        <div style={{border:"1.5px solid #cdd2da",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
-          <table className="tbl">
+        {/* Column headers — bottom of the sticky band, visually connected */}
+        <div style={{overflow:"hidden"}}>
+          <table className="tbl" style={{tableLayout:"fixed",width:"100%"}}>
+            <ColGroup/>
             <thead>
               <tr>
-                <th style={{width:4,padding:0,cursor:"default"}}></th>
-                <th className={thClass("goal")} onClick={function(){toggleSort("goal");}} style={{width:70}}>Goal</th>
-                <th className={thClass("name")} onClick={function(){toggleSort("name");}}>Initiative</th>
-                <th style={{width:85,cursor:"default"}}>Status</th>
-                <th className={thClass("ci")} onClick={function(){toggleSort("ci");}} style={{width:90}}>Confidence</th>
-                <th className={thClass("performers")} onClick={function(){toggleSort("performers");}} style={{width:80}}>Teams</th>
-                <th className={thClass("committed")} onClick={function(){toggleSort("committed");}} style={{width:90}}>Staffing</th>
-                <th style={{width:90,cursor:"default"}}>Capacity</th>
+                {COLS.map(function(c,i){
+                  var isActive=sortState.col===c.key;
+                  return(
+                    <th key={i} className={c.nosort?"nosort":""}
+                      style={{position:"static",borderTop:"none",padding:c.key==="stripe"?"0":"7px 8px",cursor:c.nosort?"default":"pointer"}}
+                      onClick={c.nosort?undefined:function(){toggleSort(c.key);}}>
+                      {c.th}
+                      {!c.nosort&&isActive&&<span style={{opacity:.7}}>{sortState.dir==="asc"?" ↑":" ↓"}</span>}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
-            <tbody>
-              {filtered.length===0?(
-                <tr><td colSpan={8} style={{textAlign:"center",padding:"32px",color:"#aaa",fontStyle:"italic"}}>No initiatives match the current filters.</td></tr>
-              ):filtered.map(function(x,idx){
-                var g=GOALS[x.init.goal];
-                var cs=ciStyle(x.cap?x.cap.ciNum:null);
-                var sc=STATUS_CFG[x.init.status];
-                return(
-                  <tr key={x.init.id} onClick={function(){setDrill(x.init.id);}} style={{cursor:"pointer"}}>
-                    {/* Goal color stripe */}
-                    <td style={{padding:0,background:g?g.color:"#ccc",width:4}}></td>
-                    {/* Goal chip */}
-                    <td>
-                      <span className="chip" style={{background:g?g.color+"22":"#eee",color:g?g.color:"#888"}}>G{g?g.num:"?"}</span>
-                    </td>
-                    {/* Initiative name + ID */}
-                    <td style={{maxWidth:280}}>
-                      <div style={{display:"flex",alignItems:"baseline",gap:6,minWidth:0}}>
-                        <span style={{fontSize:12.5,fontWeight:600,color:"#1a1a1a",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:220}} title={x.init.name}>{x.init.name}</span>
-                        <span style={{fontFamily:"monospace",fontSize:9.5,color:"#aaa",flexShrink:0}}>{x.init.id}</span>
-                        {x.init.isNew&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800",flexShrink:0}}>NEW</span>}
-                      </div>
-                    </td>
-                    {/* Status */}
-                    <td>
-                      {x.init.status&&sc?<span className="chip" style={{background:sc.bg,color:sc.tx}}>{x.init.status}</span>:<span style={{color:"#ccc",fontSize:10}}>—</span>}
-                    </td>
-                    {/* CI badge */}
-                    <td>
-                      {x.cap&&x.cap.ciNum!=null?(
-                        <span className="ci-pill" style={{background:cs.bg,color:cs.tx}}>
-                          <span style={{width:7,height:7,borderRadius:"50%",background:cs.dot,flexShrink:0}}/>
-                          CI {x.cap.ciNum}
-                        </span>
-                      ):<span style={{color:"#ccc",fontSize:10,fontStyle:"italic"}}>awaiting</span>}
-                    </td>
-                    {/* Performer count */}
-                    <td style={{color:"#555",fontSize:12}}>
-                      {x.cap&&x.cap.performers?x.cap.performers+" teams":"—"}
-                    </td>
-                    {/* Staffing counts */}
-                    <td><StaffCounts cap={x.cap}/></td>
-                    {/* Mini bar */}
-                    <td><MiniBar cap={x.cap}/></td>
-                  </tr>
-                );
-              })}
-            </tbody>
           </table>
         </div>
+      </div>
 
-        {/* Legend */}
-        <div style={{marginTop:10,display:"flex",alignItems:"center",gap:14,fontSize:10,color:"#888",flexWrap:"wrap"}}>
-          <span style={{fontWeight:600,color:"#aaa",textTransform:"uppercase",fontSize:9,letterSpacing:.4}}>Capacity bar:</span>
-          {[["#1E8449","Definitely"],["#58D68D","Possibly-S"],["#F9E79F","Possibly-M"],["#F0B27A","Possibly-L"],["#E74C3C","No Capacity"]].map(function(p){
-            return <span key={p[1]} style={{display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:12,height:6,background:p[0],borderRadius:1,display:"inline-block"}}/>{p[1]}</span>;
-          })}
-          <span style={{marginLeft:"auto",color:"#bbb",fontStyle:"italic"}}>Click any row for full capacity breakdown · Click column headers to sort</span>
-        </div>
+      {/* ── SCROLLABLE BODY ONLY ── */}
+      <div style={{flex:1,overflow:"auto",borderLeft:"1.5px solid #cdd2da",borderRight:"1.5px solid #cdd2da",borderBottom:"1.5px solid #cdd2da",background:"#fff",borderTop:"none"}}>
+        <table className="tbl tbl-body" style={{tableLayout:"fixed",width:"100%"}}>
+          <ColGroup/>
+          <tbody>
+            {filtered.length===0?(
+              <tr><td colSpan={8} style={{textAlign:"center",padding:"40px",color:"#aaa",fontStyle:"italic",borderRight:"none"}}>No initiatives match the current filters.</td></tr>
+            ):filtered.map(function(x){
+              var g=GOALS[x.init.goal];
+              var cs=ciStyle(x.cap?x.cap.ciNum:null);
+              var sc=STATUS_CFG[x.init.status];
+              return(
+                <tr key={x.init.id} onClick={function(){setDrill(x.init.id);}} style={{cursor:"pointer"}}>
+                  <td style={{padding:0,background:g?g.color:"#ccc"}}/>
+                  <td><span className="chip" style={{background:g?g.color+"22":"#eee",color:g?g.color:"#888"}}>G{g?g.num:"?"}</span></td>
+                  <td title={x.init.name} style={{maxWidth:0}}>
+                    <div style={{display:"flex",alignItems:"baseline",gap:5,overflow:"hidden"}}>
+                      <span style={{fontSize:12.5,fontWeight:600,color:"#1a1a1a",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:"1 1 0",minWidth:0}}>{x.init.name}</span>
+                      <span style={{fontFamily:"monospace",fontSize:9.5,color:"#aaa",flexShrink:0}}>{x.init.id}</span>
+                      {x.init.isNew&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800",flexShrink:0}}>NEW</span>}
+                    </div>
+                  </td>
+                  <td>{x.init.status&&sc?<span className="chip" style={{background:sc.bg,color:sc.tx}}>{x.init.status}</span>:<span style={{color:"#ccc",fontSize:10}}>—</span>}</td>
+                  <td>
+                    {x.cap&&x.cap.ciNum!=null?(
+                      <span className="ci-pill" style={{background:cs.bg,color:cs.tx}}>
+                        <span style={{width:7,height:7,borderRadius:"50%",background:cs.dot,flexShrink:0}}/>CI {x.cap.ciNum}
+                      </span>
+                    ):<span style={{color:"#ccc",fontSize:10,fontStyle:"italic"}}>awaiting</span>}
+                  </td>
+                  <td style={{color:"#555",fontSize:11.5}}>{x.cap&&x.cap.performers?x.cap.performers+" teams":"—"}</td>
+                  <td><StaffCounts cap={x.cap}/></td>
+                  <td><MiniBar cap={x.cap}/></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Legend bar ── */}
+      <div style={{flexShrink:0,background:"#fff",borderTop:"1px solid #dde1e7",borderLeft:"1.5px solid #cdd2da",borderRight:"1.5px solid #cdd2da",borderBottom:"1.5px solid #cdd2da",padding:"5px 20px",display:"flex",alignItems:"center",gap:14,fontSize:9.5,color:"#888",flexWrap:"wrap"}}>
+        <span style={{fontWeight:700,color:"#aaa",textTransform:"uppercase",fontSize:8.5,letterSpacing:.4}}>Capacity bar</span>
+        {[["#1E8449","Definitely"],["#58D68D","Possibly S"],["#F9E79F","Possibly M"],["#F0B27A","Possibly L"],["#E74C3C","No Capacity"]].map(function(p){
+          return <span key={p[1]} style={{display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:12,height:5,background:p[0],borderRadius:1,display:"inline-block"}}/>{p[1]}</span>;
+        })}
+        <span style={{marginLeft:"auto",color:"#bbb",fontStyle:"italic",fontSize:9}}>Click any row for performer detail · Click column headers to sort</span>
       </div>
 
       {drillItem&&<DrillPanel item={drillItem} onClose={function(){setDrill(null);}}/>}

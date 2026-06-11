@@ -63,10 +63,24 @@ const STATUS_CFG = {
   Complete:{bg:"#D5F5E3",tx:"#1E8449"},
 };
 
-// Teams in order matching calculations tab columns N onward (5 cols each)
-// Order MUST match the column order in the Calculations tab (5 cols per team, starting col N).
-// Note: OFM precedes TPC here — this matches the sheet. Swapping these two caused
-// OFM entries to render under TPC's name and vice-versa (see bug fix 2026-06).
+// Returns the chip styling + label for an initiative's status.
+// Proposed splits into "Proposed (New)" (amber) vs "Proposed (Ongoing)" (yellow).
+function statusDisplay(init){
+  if(!init||!init.status)return null;
+  var s=init.status;
+  if(s==="Proposed"){
+    if(init.isNew)return{label:"Proposed (New)",bg:"#FEF5E7",tx:"#9A6800"};
+    return{label:"Proposed (Ongoing)",bg:"#FCF3CF",tx:"#7D6608"};
+  }
+  var cfg=STATUS_CFG[s];
+  if(!cfg)return null;
+  return{label:s,bg:cfg.bg,tx:cfg.tx};
+}
+
+// Team order MUST match the column order in the Calculations tab (5 cols per team, starting col N).
+// OFM precedes TPC here — this matches the sheet. Swapping these two caused
+// OFM entries to render under TPC's name and vice-versa (bug fix 2026-06).
+// The startup verifier below cross-checks this array against the sheet's team-name header row.
 const TEAMS = [
   "Chief of Staff","COO","DCD","DMSR","DMSR (ODA)","Engagement","OFM","TPC",
   "Innovation","Policy","Product","UX","DTPD","BioBank",
@@ -82,9 +96,7 @@ const STAFF_CFG = {
   "N":{label:"No Capacity",color:"#C0392B",bg:"#fdf2f2"},
 };
 
-// CI methodology, surfaced via tooltips
 const CI_METHODOLOGY = "Confidence Index = weighted sum ÷ performers. Definitely +1.0, Possibly XS/S +0.8, Possibly M 0, Possibly L/XL −0.5, No Capacity −1.0. Thresholds: 8–10 on track, 6–7 monitor, ≤5 at risk.";
-function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 
 function ciTier(n){if(n==null)return"none";if(n>=8)return"high";if(n>=6)return"med";return"risk";}
 function ciStyle(n){
@@ -96,7 +108,7 @@ function ciStyle(n){
 }
 
 function cacheBust(u){return u+(u.includes("?")?"&":"?")+"_="+Date.now();}
-
+function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 function parseCSV(text){
   var rows=[],row=[],cell="",inQ=false;
   for(var i=0;i<text.length;i++){
@@ -152,6 +164,37 @@ function parseInits(t){
 function parseCap(t){
   var rows=parseCSV(t),hi=0;
   for(var i=0;i<Math.min(6,rows.length);i++){if(rows[i][0]&&nh(rows[i][0])==="id"){hi=i;break;}}
+
+  // ── Belt-and-suspenders: verify team column order matches the TEAMS array ──
+  // In the source sheet, team names typically appear as merged-cell headers spanning
+  // 5 columns each, in a row above the per-column sub-headers. In CSV export the
+  // merged value lands in the leftmost cell. We scan up to 3 rows above the ID-header
+  // row at each expected team-column position; if a non-empty cell doesn't match the
+  // TEAMS entry, we flag it. This catches future sheet edits that reorder columns.
+  var mismatches=[];
+  function findCellAbove(col,maxScan){
+    var limit=Math.max(0,hi-(maxScan||3));
+    for(var r=hi-1;r>=limit;r--){
+      var cell=String((rows[r]||[])[col]||"").trim();
+      if(cell)return cell;
+    }
+    return "";
+  }
+  TEAMS.forEach(function(expected,idx){
+    var col=TEAM_COL_START+(idx*5);
+    var found=findCellAbove(col,3);
+    if(found&&found.toLowerCase()!==expected.toLowerCase()){
+      // Tolerate trivial whitespace/punct differences but flag real ordering issues
+      var norm=function(s){return s.toLowerCase().replace(/[^a-z0-9]/g,"");};
+      if(norm(found)!==norm(expected)){
+        mismatches.push("Position "+(idx+1)+" (col "+col+"): expected '"+expected+"', sheet shows '"+found+"'");
+      }
+    }
+  });
+  if(mismatches.length){
+    console.error("⚠️ CAPACITY TEAM COLUMN MISMATCH — drill-down attribution will be incorrect until fixed:\n  - "+mismatches.join("\n  - "));
+  }
+
   var get=makeGet(rows[hi]),body=rows.slice(hi+1),map={};
   body.forEach(function(row){
     var id=get(row,"ID");if(!id||!/^\d+\.\d+/.test(id))return;
@@ -181,6 +224,9 @@ function parseCap(t){
       noCapacity:int("No Capacity Remaining"),notPerforming:int("Not Performing"),
       teams:performers};
   });
+  // Stash mismatches alongside the map so the App can surface them as a banner.
+  // Underscore prefix makes it distinguishable from real initiative-ID keys.
+  Object.defineProperty(map,"_mismatches",{value:mismatches,enumerable:false});
   return map;
 }
 
@@ -221,7 +267,7 @@ function MiniBar({cap}){
     {n:cap.noCapacity,c:"#E74C3C"}
   ];
   return(
-    <div style={{display:"flex",height:7,borderRadius:2,overflow:"hidden",background:"#e8e8e8",width:76}}>
+    <div style={{display:"flex",height:7,borderRadius:2,overflow:"hidden",background:"#e8e8e8",width:90}}>
       {segs.map(function(s,i){return s.n>0?<div key={i} style={{flexGrow:s.n,background:s.c}}/>:null;})}
     </div>
   );
@@ -378,6 +424,10 @@ function InsightPanel({insights,health,onSelect,onGoalClick,onTierClick}){
           <span><span style={{color:"#B7950B",fontWeight:700}}>~</span> Possibly (any size)</span>
           <span><span style={{color:"#C0392B",fontWeight:700}}>✗</span> No Capacity</span>
         </div>
+        <div style={{borderTop:"1px solid #eee",paddingTop:8,marginTop:8,fontSize:10.5,color:"#777",display:"flex",gap:14,flexWrap:"wrap"}}>
+          <span><span className="chip" style={{background:"#FCF3CF",color:"#7D6608",fontSize:9.5}}>Proposed (Ongoing)</span> carried forward</span>
+          <span><span className="chip" style={{background:"#FEF5E7",color:"#9A6800",fontSize:9.5}}>Proposed (New)</span> first time this cycle</span>
+        </div>
         <div style={{fontSize:10,color:"#aaa",marginTop:9,fontStyle:"italic"}}>Click any initiative row for performer detail. Click table headers to sort.</div>
       </InsightCard>
     </div>
@@ -389,7 +439,7 @@ function DrillPanel({item,onClose}){
   var init=item.init,cap=item.cap;
   var g=GOALS[init.goal];
   var cs=ciStyle(cap?cap.ciNum:null);
-  var sc=STATUS_CFG[init.status];
+  var sd=statusDisplay(init);
 
   var byStaff={D:[],P:[],N:[]};
   if(cap&&cap.teams){
@@ -414,8 +464,8 @@ function DrillPanel({item,onClose}){
             <button onClick={onClose} style={{border:"none",background:"none",color:"#7a9ab8",fontSize:20,cursor:"pointer",lineHeight:1,padding:0}}>×</button>
           </div>
           <div style={{display:"flex",gap:4,marginTop:10,flexWrap:"wrap"}}>
-            {init.status&&sc&&<span className="chip" style={{background:sc.bg,color:sc.tx}}>{init.status}</span>}
-            {init.isNew&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800"}}>NEW</span>}
+            {sd&&<span className="chip" style={{background:sd.bg,color:sd.tx}}>{sd.label}</span>}
+            {init.isNew&&init.status!=="Proposed"&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800"}}>NEW</span>}
           </div>
         </div>
 
@@ -505,13 +555,15 @@ function DrillPanel({item,onClose}){
   );
 }
 
+// Wider Status / Confidence / Capacity columns — Initiative column flexes to fill remaining space.
+// Status widened to fit "Proposed (Ongoing)" comfortably.
 const COLS = [
   {w:4,    th:"",           key:"stripe",    nosort:true},
   {w:54,   th:"Goal",       key:"goal"},
   {w:null, th:"Initiative", key:"name"},
-  {w:78,   th:"Status",     key:"status",    nosort:true},
-  {w:86,   th:"Confidence", key:"ci",        tip:CI_METHODOLOGY},
-  {w:150,  th:"Capacity",   key:"committed"},
+  {w:130,  th:"Status",     key:"status",    nosort:true},
+  {w:105,  th:"Confidence", key:"ci",        tip:CI_METHODOLOGY},
+  {w:185,  th:"Capacity",   key:"committed"},
 ];
 
 function ColGroup(){
@@ -522,10 +574,33 @@ function ColGroup(){
   );
 }
 
+function MismatchBanner({mismatches,onDismiss}){
+  if(!mismatches||!mismatches.length)return null;
+  return(
+    <div style={{padding:"10px 24px",background:"#FDECEA",borderBottom:"1px solid #E6B0AA",color:"#7B241C",fontSize:12,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+        <span style={{fontSize:16,lineHeight:1.2}}>⚠️</span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:700,marginBottom:4}}>Capacity team column mismatch detected ({mismatches.length})</div>
+          <div style={{fontSize:11,lineHeight:1.5}}>
+            The Calculations tab columns don't match the expected TEAMS order. Drill-down performer attribution may be incorrect until the dashboard code or the sheet column order is fixed.
+            <ul style={{margin:"6px 0 0 18px",padding:0,fontSize:10.5,fontFamily:"monospace",color:"#922b21"}}>
+              {mismatches.map(function(m,i){return <li key={i} style={{marginBottom:2}}>{m}</li>;})}
+            </ul>
+          </div>
+        </div>
+        <button onClick={onDismiss} title="Dismiss" style={{border:"none",background:"none",color:"#7B241C",fontSize:18,cursor:"pointer",lineHeight:1,padding:"0 4px",flexShrink:0}}>×</button>
+      </div>
+    </div>
+  );
+}
+
 function App(){
   var ist=useState([]);   var inits=ist[0],setInits=ist[1];
   var cst=useState({});   var capMap=cst[0],setCapMap=cst[1];
   var gst=useState({});   var goalsRef=gst[0],setGoalsRef=gst[1];
+  var mst=useState([]);   var mismatches=mst[0],setMismatches=mst[1];
+  var bdm=useState(false); var bannerDismissed=bdm[0],setBannerDismissed=bdm[1];
   var lst=useState("loading"); var loadState=lst[0],setLoadState=lst[1];
   var ler=useState(""); var loadError=ler[0],setLoadError=ler[1];
   var lat=useState(null); var loadedAt=lat[0],setLoadedAt=lat[1];
@@ -536,11 +611,16 @@ function App(){
   var srt=useState({col:"ci",dir:"asc"}); var sortState=srt[0],setSortState=srt[1];
 
   function loadAll(){
-    setLoadState("loading");setLoadError("");
+    setLoadState("loading");setLoadError("");setBannerDismissed(false);
     var p1=fetch(cacheBust(LIVE_CSV),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(parseInits);
     var p2=fetch(cacheBust(CAPACITY_CSV),{cache:"no-store"}).then(function(r){return r.text();}).then(parseCap).catch(function(){return{};});
     var p3=fetch(cacheBust(GOALS_CSV),{cache:"no-store"}).then(function(r){return r.text();}).then(parseGoals).catch(function(){return{};});
-    Promise.all([p1,p2,p3]).then(function(r){setInits(r[0]);setCapMap(r[1]);setGoalsRef(r[2]);setLoadState("live");setLoadedAt(new Date());})
+    Promise.all([p1,p2,p3]).then(function(r){
+      var capData=r[1]||{};
+      var mm=capData._mismatches||[];
+      setInits(r[0]);setCapMap(capData);setMismatches(mm);setGoalsRef(r[2]);
+      setLoadState("live");setLoadedAt(new Date());
+    })
       .catch(function(e){setLoadError(e.message||String(e));setLoadState("error");});
   }
   useEffect(function(){loadAll();},[]);
@@ -640,6 +720,10 @@ function App(){
         </div>
       </div>
 
+      {/* Startup verification banner — only shows if team column order in the sheet
+          doesn't match the TEAMS array in this dashboard's code */}
+      {!bannerDismissed && <MismatchBanner mismatches={mismatches} onDismiss={function(){setBannerDismissed(true);}}/>}
+
       {/* Metric strip */}
       <div style={{padding:"12px 24px 8px",background:"#fff",borderBottom:"1px solid #ececec",flexShrink:0}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:10}}>
@@ -712,7 +796,7 @@ function App(){
               ):filtered.map(function(x){
                 var g=GOALS[x.init.goal];
                 var cs=ciStyle(x.cap?x.cap.ciNum:null);
-                var sc=STATUS_CFG[x.init.status];
+                var sd=statusDisplay(x.init);
                 return(
                   <tr key={x.init.id} onClick={function(){setDrill(x.init.id);}} style={{cursor:"pointer"}}>
                     <td style={{padding:0,background:g?g.color:"#ccc"}}/>
@@ -721,12 +805,11 @@ function App(){
                       <div style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:5,overflow:"hidden"}}>
                           <span style={{fontSize:12.5,fontWeight:700,color:"#1a1a1a",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:"1 1 0",minWidth:0}}>{x.init.name}</span>
-                          {x.init.isNew&&<span className="chip" style={{background:"#FEF5E7",color:"#9A6800",flexShrink:0}}>NEW</span>}
                         </div>
                         <div style={{fontFamily:"monospace",fontSize:9.5,color:"#aaa",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{x.init.id}{x.init.objOwner?" · "+x.init.objOwner:""}</div>
                       </div>
                     </td>
-                    <td>{x.init.status&&sc?<span className="chip" style={{background:sc.bg,color:sc.tx}}>{x.init.status}</span>:<span style={{color:"#ccc",fontSize:10}}>—</span>}</td>
+                    <td>{sd?<span className="chip" style={{background:sd.bg,color:sd.tx}}>{sd.label}</span>:<span style={{color:"#ccc",fontSize:10}}>—</span>}</td>
                     <td>
                       {x.cap&&x.cap.ciNum!=null?(
                         <span className="ci-pill" title={CI_METHODOLOGY} style={{background:cs.bg,color:cs.tx}}>

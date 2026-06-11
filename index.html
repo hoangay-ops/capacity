@@ -84,6 +84,7 @@ const STAFF_CFG = {
 
 // CI methodology, surfaced via tooltips
 const CI_METHODOLOGY = "Confidence Index = weighted sum ÷ performers. Definitely +1.0, Possibly XS/S +0.8, Possibly M 0, Possibly L/XL −0.5, No Capacity −1.0. Thresholds: 8–10 on track, 6–7 monitor, ≤5 at risk.";
+function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 
 function ciTier(n){if(n==null)return"none";if(n>=8)return"high";if(n>=6)return"med";return"risk";}
 function ciStyle(n){

@@ -46,7 +46,8 @@ const LIVE_CSV     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3uNKjiEr
 const GOALS_CSV    = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3uNKjiErriTzB7r258GdfQdeXVhzjbfG4VZr5J0u9ZMj9punGsNHbnzeaGyuiC3-VT1cUHAqrOSXI/pub?gid=1157686184&single=true&output=csv";
 const CAPACITY_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBMoz4Ih_0AkKsm0qr1xfM4tkppaQqFJVWJ8IE6tmSO99MmxUOW8scahb2ljMapz_lPO_4Q_EaKDR8/pub?gid=910516878&single=true&output=csv";
 
-// Consolidated goal labels — consistent across all three dashboards
+// Canonical goal definitions — keep in sync across Capacity, QPE, and Roadmap dashboards.
+// `name` is the official long-form label; `short` is the compact UI label.
 const GOALS = {
   "1":{num:"1",name:"Enrollment & Retention",short:"Enrollment & Retention",color:"#2471A3"},
   "2":{num:"2",name:"Data Available to Researchers",short:"Data to Researchers",color:"#1E8449"},
@@ -76,7 +77,6 @@ function statusDisplay(init){
   if(!cfg)return null;
   return{label:s,bg:cfg.bg,tx:cfg.tx};
 }
-function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 
 // Team order MUST match the column order in the Calculations tab (5 cols per team, starting col N).
 // OFM precedes TPC here — this matches the sheet. Swapping these two caused
@@ -152,10 +152,14 @@ function parseInits(t){
     var g=gm?gm[1]:"";if(!GOALS[g])return acc;
     var q3s=get(row,"Q3 2026 Status","Q3 Status"),q2s=get(row,"Q2 2026 Status","Q2 Status");
     var status=parseSt(q3s)||parseSt(q2s);
+    // Project Type holds NEW / Initiative / Concept — used as both a NEW flag AND
+    // a Concept marker. Concept items must be excluded even when their status reads "Proposed".
+    var projType=get(row,"Project Type","Type");
+    var isConcept=/concept/i.test(projType);
     // Exclude Complete, Concept, Eliminated, and Backlogged — these don't move into Q3 capacity planning
-    if(status==="Complete"||status==="Concept"||status==="Eliminated"||status==="Backlogged")return acc;
+    if(status==="Complete"||status==="Concept"||status==="Eliminated"||status==="Backlogged"||isConcept)return acc;
     acc.push({id,name,goal:g,status,
-      isNew:/^new\b/i.test(get(row,"Project Type","Type")),
+      isNew:/^new\b/i.test(projType),
       objOwner:get(row,"Obj Owner","Objective Owner","Owner"),
       poc:get(row,"POC or PdM","POC","PdM"),
       objName:get(row,"Objective Name","Obj Name")});
@@ -256,6 +260,9 @@ EBC.prototype.render=function(){
 };
 
 const {useState,useMemo,useEffect} = React;
+
+// Canonical italicized program name — use everywhere "All of Us" appears in UI text.
+function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 
 function MiniBar({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#ccc",fontSize:10}}>awaiting</span>;
@@ -713,7 +720,7 @@ function App(){
       {/* Standard header — matches QPE and Roadmap */}
       <div style={{padding:"14px 24px",background:"#fff",borderBottom:"1px solid #ececec",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,gap:12}}>
         <div style={{minWidth:0}}>
-          <div style={{fontSize:10.5,textTransform:"uppercase",letterSpacing:1.4,color:"#888",fontWeight:600,marginBottom:4}}>NIH · <em>All of Us</em> Research Program · Q3 2026 Capacity Planning</div>
+          <div style={{fontSize:10.5,textTransform:"uppercase",letterSpacing:1.4,color:"#888",fontWeight:600,marginBottom:4}}>NIH · <AoU/> Research Program · Q3 2026 Capacity Planning</div>
           <div style={{fontSize:20,fontWeight:700,color:"#111",lineHeight:1.2,letterSpacing:-0.2}}>Capacity Planning Dashboard</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,flexWrap:"wrap"}}>

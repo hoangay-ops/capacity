@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--hub-bg);color:#1a1a1a;overflow:hidden;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8fa;color:#1a1a1a;overflow:hidden;}
 button,select,input{font-family:inherit;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px;}
@@ -26,64 +26,16 @@ button,select,input{font-family:inherit;}
 .tbl-body tr:nth-child(odd) td{background:#fff;}
 .chip{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;white-space:nowrap;}
 .ci-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;}
-.filter-btn{font-size:11px;padding:3px 9px;border:1px solid #cfd5de;border-radius:12px;background:#fff;cursor:pointer;color:#555;transition:all .1s;line-height:1.4;}
-.filter-btn:hover{background:#1e2a3a;border-color:#1e2a3a;color:#fff;}
-.filter-btn.active{background:#1e2a3a;border-color:#1e2a3a;color:#fff;font-weight:600;}
-.sort-sel{font-size:11px;padding:3px 8px;border:1px solid #cfd5de;border-radius:6px;background:#fff;color:#555;cursor:pointer;}
-.sort-asc th.active::after{content:" ↑";opacity:.7;}
-.sort-desc th.active::after{content:" ↓";opacity:.7;}
-
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   All of Us Planning Hub — shared visual system
-   Applies a consistent header, toolbar, card, and spacing rhythm across tabs.
-   ───────────────────────────────────────────────────────────────────────────── */
-:root{
-  --hub-bg:#f4f6f8;
-  --hub-surface:#ffffff;
-  --hub-surface-alt:#fafbfc;
-  --hub-border:#dde3ec;
-  --hub-border-soft:#eceff3;
-  --hub-text:#18222f;
-  --hub-muted:#6f7f8f;
-  --hub-faint:#9aa8b5;
-  --hub-brand:#2471A3;
-  --hub-brand-soft:#EBF5FB;
-  --hub-danger:#C0392B;
-  --hub-shadow:0 1px 3px rgba(20,35,55,.05),0 8px 24px rgba(20,35,55,.04);
-  --hub-radius:12px;
-}
-html,body{background:var(--hub-bg)!important;color:var(--hub-text);}
-button,select,input{font-family:inherit;}
-.card,.g-card{border-color:var(--hub-border-soft)!important;border-radius:var(--hub-radius)!important;box-shadow:0 1px 2px rgba(20,35,55,.03);}
-.hub-top{flex-shrink:0;background:var(--hub-bg);border-bottom:1px solid var(--hub-border);padding:16px 24px 14px;display:flex;flex-direction:column;gap:12px;}
-.hub-header-card{background:var(--hub-surface);border:1px solid var(--hub-border);border-radius:var(--hub-radius);box-shadow:var(--hub-shadow);padding:16px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
-.hub-header-main{min-width:0;display:flex;flex-direction:column;gap:4px;}
-.hub-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--hub-muted);font-weight:700;line-height:1.2;}
-.hub-title{font-size:21px;font-weight:750;color:var(--hub-text);line-height:1.15;letter-spacing:-.25px;}
-.hub-subtitle{font-size:12px;color:var(--hub-muted);line-height:1.35;max-width:720px;}
-.hub-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;flex-shrink:0;}
-.hub-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:650;padding:4px 10px;border-radius:999px;background:var(--hub-surface-alt);border:1px solid var(--hub-border-soft);color:var(--hub-muted);white-space:nowrap;}
-.hub-pill.good{background:#EAF7EF;border-color:#D7EFDF;color:#1E8449;}
-.hub-pill.warn{background:#FEF9E7;border-color:#F5E6A8;color:#7D6008;}
-.hub-btn{font-size:11.5px;padding:6px 12px;border:1px solid var(--hub-border);border-radius:8px;background:#fff;color:#475569;cursor:pointer;font-weight:600;line-height:1.2;}
-.hub-btn:hover{border-color:var(--hub-brand);color:var(--hub-brand);background:var(--hub-brand-soft);}
-.hub-btn.primary{border-color:#C8DCF0;background:var(--hub-brand-soft);color:var(--hub-brand);}
-.hub-toolbar{background:var(--hub-surface);border:1px solid var(--hub-border);border-radius:var(--hub-radius);box-shadow:var(--hub-shadow);padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.hub-toolbar-label,.tb-lbl{font-size:9.5px!important;text-transform:uppercase!important;color:var(--hub-faint)!important;font-weight:800!important;letter-spacing:.06em!important;margin-right:2px;}
-.hub-status-row{background:var(--hub-surface-alt);border:1px solid var(--hub-border);border-radius:10px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--hub-muted);}
-.hub-metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;}
-.hub-metric{background:var(--hub-surface);border:1px solid var(--hub-border);border-radius:var(--hub-radius);padding:10px 12px;box-shadow:var(--hub-shadow);cursor:default;min-width:0;}
-.hub-metric.clickable{cursor:pointer;}
-.hub-metric.active{outline:2px solid rgba(36,113,163,.28);border-color:#9FC5E8;background:#F4FAFF;}
-.hub-metric-label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hub-metric-value{font-size:22px;font-weight:850;line-height:1.05;margin-top:3px;}
-.hub-metric-sub{font-size:9.5px;opacity:.68;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hub-search{font-size:12px;padding:6px 11px;border:1px solid var(--hub-border);border-radius:999px;background:#fff;color:var(--hub-text);min-width:180px;}
-.hub-search:focus{outline:2px solid rgba(36,113,163,.18);border-color:var(--hub-brand);}
-.hub-workspace{padding:16px 24px;}
-@media(max-width:900px){.hub-header-card{flex-direction:column;gap:12px}.hub-actions{justify-content:flex-start}.hub-top{padding:12px}.hub-title{font-size:18px}.hub-metric-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}
-
+.filter-btn{font-size:11.5px;padding:5px 11px;border:1px solid #dcdcdc;border-radius:18px;background:#fff;cursor:pointer;color:#555;transition:all .1s;line-height:1.4;font-weight:500;}
+.filter-btn:hover{background:#EBF5FB;border-color:#2471A3;color:#2471A3;}
+.filter-btn.active{background:#EBF5FB;border-color:#2471A3;color:#2471A3;font-weight:600;}
+.metric-tile{background:#fff;border:1px solid #ececec;border-radius:10px;padding:10px 12px;cursor:default;min-width:0;}
+.metric-tile.clickable{cursor:pointer;transition:transform .12s,box-shadow .12s;}
+.metric-tile.clickable:hover{transform:translateY(-1px);box-shadow:0 3px 12px rgba(0,0,0,.06);}
+.metric-tile.active{outline:2px solid rgba(36,113,163,.25);border-color:#9FC5E8;background:#F4FAFF;}
+.metric-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.metric-value{font-size:22px;font-weight:800;line-height:1.05;margin-top:3px;}
+.metric-sub{font-size:9.5px;opacity:.68;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 </style>
 </head>
 <body>
@@ -94,13 +46,14 @@ const LIVE_CSV     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3uNKjiEr
 const GOALS_CSV    = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3uNKjiErriTzB7r258GdfQdeXVhzjbfG4VZr5J0u9ZMj9punGsNHbnzeaGyuiC3-VT1cUHAqrOSXI/pub?gid=1157686184&single=true&output=csv";
 const CAPACITY_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBMoz4Ih_0AkKsm0qr1xfM4tkppaQqFJVWJ8IE6tmSO99MmxUOW8scahb2ljMapz_lPO_4Q_EaKDR8/pub?gid=910516878&single=true&output=csv";
 
+// Consolidated goal labels — consistent across all three dashboards
 const GOALS = {
-  "1":{num:"1",name:"Enrollment & Retention",short:"Enrollment",color:"#2471A3"},
-  "2":{num:"2",name:"Data to Researchers",short:"Data",color:"#1E8449"},
-  "3":{num:"3",name:"Partnered Research",short:"Partnered Rsch",color:"#D35400"},
-  "4":{num:"4",name:"Researcher Access",short:"Rsch Access",color:"#B7950B"},
+  "1":{num:"1",name:"Enrollment & Retention",short:"Enrollment & Retention",color:"#2471A3"},
+  "2":{num:"2",name:"Data to Researchers",short:"Data to Researchers",color:"#1E8449"},
+  "3":{num:"3",name:"Partnered Research",short:"Partnered Research",color:"#D35400"},
+  "4":{num:"4",name:"Researcher Access",short:"Researcher Access",color:"#B7950B"},
   "5":{num:"5",name:"Return of Value",short:"Return of Value",color:"#7D3C98"},
-  "6":{num:"6",name:"Management & Ops",short:"Mgmt & Ops",color:"#5D6D7E"},
+  "6":{num:"6",name:"Management & Ops",short:"Management & Ops",color:"#5D6D7E"},
 };
 
 const STATUS_CFG = {
@@ -111,13 +64,16 @@ const STATUS_CFG = {
 };
 
 // Teams in order matching calculations tab columns N onward (5 cols each)
+// Order MUST match the column order in the Calculations tab (5 cols per team, starting col N).
+// Note: OFM precedes TPC here — this matches the sheet. Swapping these two caused
+// OFM entries to render under TPC's name and vice-versa (see bug fix 2026-06).
 const TEAMS = [
-  "Chief of Staff","COO","DCD","DMSR","DMSR (ODA)","Engagement","TPC","OFM",
+  "Chief of Staff","COO","DCD","DMSR","DMSR (ODA)","Engagement","OFM","TPC",
   "Innovation","Policy","Product","UX","DTPD","BioBank",
   "DRC: Analytics","DRC: Curation","DRC: RDR","DRC: HealthPro","DRC: Public","DRC: Workbench",
   "PPSC: NORC","PPSC: IBM","PPSC: Support Center"
 ];
-const TEAM_COL_START = 13; // index 0-based in CSV row (column N in sheet)
+const TEAM_COL_START = 13;
 
 const LOE_LABEL = {"1":"XS","2":"S","3":"M","5":"L","8":"XL","13":"XXL","21":"XXXL"};
 const STAFF_CFG = {
@@ -125,6 +81,9 @@ const STAFF_CFG = {
   "P":{label:"Possibly",color:"#B7950B",bg:"#fefaec"},
   "N":{label:"No Capacity",color:"#C0392B",bg:"#fdf2f2"},
 };
+
+// CI methodology, surfaced via tooltips
+const CI_METHODOLOGY = "Confidence Index = weighted sum ÷ performers. Definitely +1.0, Possibly XS/S +0.8, Possibly M 0, Possibly L/XL −0.5, No Capacity −1.0. Thresholds: 8–10 on track, 6–7 monitor, ≤5 at risk.";
 
 function ciTier(n){if(n==null)return"none";if(n>=8)return"high";if(n>=6)return"med";return"risk";}
 function ciStyle(n){
@@ -134,7 +93,7 @@ function ciStyle(n){
   if(t==="risk")return{bg:"#fdf2f2",tx:"#922b21",dot:"#C0392B"};
   return{bg:"#f4f4f4",tx:"#888",dot:"#ccc"};
 }
-function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
+
 function cacheBust(u){return u+(u.includes("?")?"&":"?")+"_="+Date.now();}
 
 function parseCSV(text){
@@ -178,7 +137,7 @@ function parseInits(t){
     var g=gm?gm[1]:"";if(!GOALS[g])return acc;
     var q3s=get(row,"Q3 2026 Status","Q3 Status"),q2s=get(row,"Q2 2026 Status","Q2 Status");
     var status=parseSt(q3s)||parseSt(q2s);
-    // Exclude Complete, Concept, Eliminated, and Backlogged from capacity dashboard
+    // Exclude Complete, Concept, Eliminated, and Backlogged — these don't move into Q3 capacity planning
     if(status==="Complete"||status==="Concept"||status==="Eliminated"||status==="Backlogged")return acc;
     acc.push({id,name,goal:g,status,
       isNew:/^new\b/i.test(get(row,"Project Type","Type")),
@@ -201,7 +160,6 @@ function parseCap(t){
     var cm=lbl.match(/(\d+)/);
     function int(k){return parseInt(get(row,k))||0;}
 
-    // Extract per-team detail from columns N onward (index 13+)
     var performers=[];
     TEAMS.forEach(function(name,i){
       var base=TEAM_COL_START+(i*5);
@@ -238,7 +196,7 @@ function parseGoals(t){
   return map;
 }
 
-// EBC
+// Error boundary
 function EBC(p){React.Component.call(this,p);this.state={err:null};}
 EBC.prototype=Object.create(React.Component.prototype);
 EBC.prototype.constructor=EBC;
@@ -250,10 +208,17 @@ EBC.prototype.render=function(){
 
 const {useState,useMemo,useEffect} = React;
 
-// ── Mini staffing bar ──────────────────────────────────────────────────────────
 function MiniBar({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#ccc",fontSize:10}}>awaiting</span>;
-  var segs=[{n:cap.committed,c:"#1E8449"},{n:cap.posS,c:"#58D68D"},{n:cap.posM,c:"#F9E79F"},{n:cap.posL,c:"#F0B27A"},{n:cap.noCapacity,c:"#E74C3C"}];
+  var segs=[
+    {n:cap.committed,c:"#1E8449"},
+    {n:cap.posXS,c:"#82E0AA"},
+    {n:cap.posS,c:"#58D68D"},
+    {n:cap.posM,c:"#F9E79F"},
+    {n:cap.posL,c:"#F0B27A"},
+    {n:cap.posXL,c:"#E67E22"},
+    {n:cap.noCapacity,c:"#E74C3C"}
+  ];
   return(
     <div style={{display:"flex",height:7,borderRadius:2,overflow:"hidden",background:"#e8e8e8",width:76}}>
       {segs.map(function(s,i){return s.n>0?<div key={i} style={{flexGrow:s.n,background:s.c}}/>:null;})}
@@ -265,14 +230,13 @@ function StaffCounts({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#bbb",fontSize:10}}>—</span>;
   var pos=cap.posXS+cap.posS+cap.posM+cap.posL+cap.posXL;
   return(
-    <span style={{display:"inline-flex",gap:5,fontSize:11,fontWeight:600,letterSpacing:.2}}>
+    <span title="✓ Definitely · ~ Possibly (any size) · ✗ No Capacity" style={{display:"inline-flex",gap:5,fontSize:11,fontWeight:600,letterSpacing:.2}}>
       {cap.committed>0&&<span style={{color:"#1E8449"}}>✓{cap.committed}</span>}
       {pos>0&&<span style={{color:"#B7950B"}}>~{pos}</span>}
       {cap.noCapacity>0&&<span style={{color:"#C0392B"}}>✗{cap.noCapacity}</span>}
     </span>
   );
 }
-
 
 function CapacityCell({cap}){
   if(!cap||!cap.performers)return <span style={{color:"#bbb",fontSize:10,fontStyle:"italic"}}>awaiting</span>;
@@ -289,8 +253,8 @@ function CapacityCell({cap}){
 
 function InsightCard({title,children,action}){
   return(
-    <div style={{background:"#fff",border:"1px solid #cdd2da",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)",overflow:"hidden"}}>
-      <div style={{padding:"9px 12px",background:"#f7f9fb",borderBottom:"1px solid #e4e8ed",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+    <div style={{background:"#fff",border:"1px solid #ececec",borderRadius:10,boxShadow:"0 1px 2px rgba(0,0,0,.03)",overflow:"hidden"}}>
+      <div style={{padding:"9px 12px",background:"#fafbfc",borderBottom:"1px solid #ececec",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
         <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:.55,color:"#607080",fontWeight:800}}>{title}</div>
         {action&&<div style={{fontSize:10,color:"#8a98a8"}}>{action}</div>}
       </div>
@@ -342,15 +306,16 @@ function BottleneckRows({teams}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:6}}>
       {teams.map(function(t){
+        var frac=t.total>0?(t.count/t.total*100):0;
         return(
           <div key={t.name} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center"}}>
             <div style={{minWidth:0}}>
               <div style={{fontSize:11.5,fontWeight:650,color:"#333",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.name}</div>
               <div style={{height:5,borderRadius:3,background:"#f0f2f5",overflow:"hidden",marginTop:3}}>
-                <div style={{height:"100%",width:Math.min(100,t.count*14)+"%",background:"#E74C3C"}}/>
+                <div style={{height:"100%",width:Math.min(100,frac)+"%",background:"#E74C3C"}}/>
               </div>
             </div>
-            <div style={{fontSize:11,fontWeight:800,color:"#C0392B",whiteSpace:"nowrap"}}>{t.count}</div>
+            <div title={t.count+" of "+t.total+" assigned initiatives this cycle"} style={{fontSize:11,fontWeight:800,color:"#C0392B",whiteSpace:"nowrap"}}>{t.count} / {t.total}</div>
           </div>
         );
       })}
@@ -374,13 +339,13 @@ function InsightPanel({insights,health,onSelect,onGoalClick,onTierClick}){
             ["No Data",health.noData,"#7a9ab8","none"],
             ["Avg CI",health.avg!=null?health.avg:"—",health.avg>=8?"#1E8449":health.avg>=6?"#B7950B":"#C0392B",null]
           ].map(function(k){return(
-            <div key={k[0]} onClick={function(){if(k[3])onTierClick(k[3]);}} style={{background:k[2]+"12",border:"1px solid "+k[2]+"22",borderRadius:7,padding:"8px 9px",cursor:k[3]?"pointer":"default"}}>
+            <div key={k[0]} title={k[0]==="Avg CI"?CI_METHODOLOGY:undefined} onClick={function(){if(k[3])onTierClick(k[3]);}} style={{background:k[2]+"12",border:"1px solid "+k[2]+"22",borderRadius:7,padding:"8px 9px",cursor:k[3]?"pointer":"default"}}>
               <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.45,color:k[2],fontWeight:800}}>{k[0]}</div>
               <div style={{fontSize:22,fontWeight:850,color:k[2],lineHeight:1.05,marginTop:2}}>{k[1]}</div>
             </div>
           );})}
         </div>
-        <div style={{fontSize:11.5,color:"#67717c",lineHeight:1.45,background:"#f7f9fb",borderRadius:7,padding:9}}>
+        <div style={{fontSize:11.5,color:"#67717c",lineHeight:1.45,background:"#fafbfc",borderRadius:7,padding:9}}>
           {insights.readout}
         </div>
       </InsightCard>
@@ -389,15 +354,28 @@ function InsightPanel({insights,health,onSelect,onGoalClick,onTierClick}){
         <GoalHealthRows goalHealth={insights.goalHealth} onGoalClick={onGoalClick}/>
       </InsightCard>
 
-      <InsightCard title="Capacity Bottlenecks" action="no capacity counts">
+      <InsightCard title="Capacity Bottlenecks" action="no-capacity / assigned">
         <BottleneckRows teams={insights.bottlenecks}/>
       </InsightCard>
 
       <InsightCard title="Legend">
-        <div style={{display:"flex",flexWrap:"wrap",gap:"7px 11px",fontSize:10.5,color:"#777"}}>
-          {[["#1E8449","Definitely"],["#58D68D","Possibly S"],["#F9E79F","Possibly M"],["#F0B27A","Possibly L"],["#E74C3C","No Capacity"]].map(function(p){
+        <div style={{display:"flex",flexWrap:"wrap",gap:"6px 10px",fontSize:10.5,color:"#777"}}>
+          {[
+            ["#1E8449","Definitely (+1.0)"],
+            ["#82E0AA","Possibly — XS (+0.8)"],
+            ["#58D68D","Possibly — S (+0.8)"],
+            ["#F9E79F","Possibly — M (0)"],
+            ["#F0B27A","Possibly — L (−0.5)"],
+            ["#E67E22","Possibly — XL (−0.5)"],
+            ["#E74C3C","No Capacity (−1.0)"]
+          ].map(function(p){
             return <span key={p[1]} style={{display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:13,height:6,background:p[0],borderRadius:2,display:"inline-block"}}/>{p[1]}</span>;
           })}
+        </div>
+        <div style={{borderTop:"1px solid #eee",paddingTop:8,marginTop:8,fontSize:10.5,color:"#777",display:"flex",gap:14,flexWrap:"wrap"}}>
+          <span><span style={{color:"#1E8449",fontWeight:700}}>✓</span> Definitely</span>
+          <span><span style={{color:"#B7950B",fontWeight:700}}>~</span> Possibly (any size)</span>
+          <span><span style={{color:"#C0392B",fontWeight:700}}>✗</span> No Capacity</span>
         </div>
         <div style={{fontSize:10,color:"#aaa",marginTop:9,fontStyle:"italic"}}>Click any initiative row for performer detail. Click table headers to sort.</div>
       </InsightCard>
@@ -405,14 +383,13 @@ function InsightPanel({insights,health,onSelect,onGoalClick,onTierClick}){
   );
 }
 
-// ── Drill panel ───────────────────────────────────────────────────────────────
+// Drill panel
 function DrillPanel({item,onClose}){
   var init=item.init,cap=item.cap;
   var g=GOALS[init.goal];
   var cs=ciStyle(cap?cap.ciNum:null);
   var sc=STATUS_CFG[init.status];
 
-  // Group teams by staffing commitment
   var byStaff={D:[],P:[],N:[]};
   if(cap&&cap.teams){
     cap.teams.forEach(function(t){
@@ -423,9 +400,8 @@ function DrillPanel({item,onClose}){
   return(
     <div style={{position:"fixed",inset:0,zIndex:900,display:"flex",justifyContent:"flex-end"}}>
       <div onClick={onClose} style={{flex:1,background:"rgba(0,0,0,.22)"}}/>
-      <div style={{width:460,background:"#fff",borderLeft:"1.5px solid #cdd2da",boxShadow:"-4px 0 24px rgba(0,0,0,.12)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{width:440,maxWidth:"42vw",background:"#fff",borderLeft:"1px solid #ececec",boxShadow:"-4px 0 16px rgba(0,0,0,.08)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
-        {/* Panel header */}
         <div style={{background:"#1e2a3a",padding:"14px 18px",flexShrink:0}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
             <div style={{flex:1,minWidth:0}}>
@@ -444,8 +420,7 @@ function DrillPanel({item,onClose}){
 
         <div style={{flex:1,overflowY:"auto"}}>
 
-          {/* CI hero */}
-          <div style={{padding:"14px 18px",borderBottom:"1px solid #eeeff2",background:cs.bg}}>
+          <div title={CI_METHODOLOGY} style={{padding:"14px 18px",borderBottom:"1px solid #eeeff2",background:cs.bg}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <div>
                 <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.5,color:cs.tx,fontWeight:700,opacity:.7,marginBottom:3}}>{cap?cap.lbl:"Confidence Index"}</div>
@@ -461,7 +436,6 @@ function DrillPanel({item,onClose}){
             </div>
           </div>
 
-          {/* Performer roster */}
           <div style={{padding:"14px 18px",borderBottom:"1px solid #eeeff2"}}>
             <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:10}}>
               Performers {cap&&cap.teams&&cap.teams.length>0?"("+cap.teams.length+" teams)":""}
@@ -501,11 +475,10 @@ function DrillPanel({item,onClose}){
             )}
           </div>
 
-          {/* Staffing weight explanation */}
           <div style={{padding:"12px 18px",borderBottom:"1px solid #eeeff2"}}>
             <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:8}}>Confidence weighting</div>
             <div style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"5px 10px",fontSize:11}}>
-              {[["✓","Definitely","+1.0","#1E8449"],["~","Possibly — S","+0.8","#27AE60"],["~","Possibly — M","0","#B7950B"],["~","Possibly — L / XL","−0.5","#E67E22"],["✗","No Capacity","−1.0","#C0392B"]].map(function(r,i){
+              {[["✓","Definitely","+1.0","#1E8449"],["~","Possibly — XS / S","+0.8","#27AE60"],["~","Possibly — M","0","#B7950B"],["~","Possibly — L / XL","−0.5","#E67E22"],["✗","No Capacity","−1.0","#C0392B"]].map(function(r,i){
                 return[
                   <span key={i+"i"} style={{color:r[3],fontWeight:700}}>{r[0]}</span>,
                   <span key={i+"l"} style={{color:"#555"}}>{r[1]}</span>,
@@ -515,7 +488,6 @@ function DrillPanel({item,onClose}){
             </div>
           </div>
 
-          {/* People */}
           {(init.objOwner||init.poc||init.objName)&&(
             <div style={{padding:"12px 18px"}}>
               <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.5,color:"#888",fontWeight:700,marginBottom:8}}>People</div>
@@ -532,13 +504,12 @@ function DrillPanel({item,onClose}){
   );
 }
 
-// ── Column width definitions for the condensed initiative table ──────────────
 const COLS = [
   {w:4,    th:"",           key:"stripe",    nosort:true},
   {w:54,   th:"Goal",       key:"goal"},
   {w:null, th:"Initiative", key:"name"},
   {w:78,   th:"Status",     key:"status",    nosort:true},
-  {w:86,   th:"Confidence", key:"ci"},
+  {w:86,   th:"Confidence", key:"ci",        tip:CI_METHODOLOGY},
   {w:150,  th:"Capacity",   key:"committed"},
 ];
 
@@ -550,7 +521,6 @@ function ColGroup(){
   );
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
 function App(){
   var ist=useState([]);   var inits=ist[0],setInits=ist[1];
   var cst=useState({});   var capMap=cst[0],setCapMap=cst[1];
@@ -583,7 +553,7 @@ function App(){
   },[items]);
 
   var insights=useMemo(function(){
-    var goalHealth={},teamCounts={},awaiting=[];
+    var goalHealth={},teamCounts={},teamTotals={},awaiting=[];
     Object.keys(GOALS).forEach(function(k){goalHealth[k]={high:0,med:0,risk:0,noData:0,total:0};});
     items.forEach(function(x){
       var gh=goalHealth[x.init.goal];
@@ -595,6 +565,7 @@ function App(){
       if(!x.cap||x.cap.ciNum==null)awaiting.push(x);
       if(x.cap&&x.cap.teams){
         x.cap.teams.forEach(function(t){
+          teamTotals[t.name]=(teamTotals[t.name]||0)+1;
           if(t.staff==="N")teamCounts[t.name]=(teamCounts[t.name]||0)+1;
         });
       }
@@ -605,7 +576,7 @@ function App(){
         if(ac!==bc)return ac-bc;
         return (b.cap?b.cap.noCapacity:0)-(a.cap?a.cap.noCapacity:0);
       }).slice(0,5);
-    var bottlenecks=Object.keys(teamCounts).map(function(name){return{name:name,count:teamCounts[name]};})
+    var bottlenecks=Object.keys(teamCounts).map(function(name){return{name:name,count:teamCounts[name],total:teamTotals[name]||0};})
       .sort(function(a,b){return b.count-a.count||a.name.localeCompare(b.name);}).slice(0,7);
     var riskiestGoal=Object.keys(goalHealth).sort(function(a,b){return goalHealth[b].risk-goalHealth[a].risk;})[0];
     var readout=health.risk>0
@@ -637,7 +608,6 @@ function App(){
   },[items,goalFilter,tierFilter,search,sortState]);
 
   function toggleSort(col){setSortState(function(p){return{col,dir:p.col===col&&p.dir==="asc"?"desc":"asc"};});}
-  function thCls(col){return sortState.col===col?(sortState.dir==="asc"?"sort-asc":"sort-desc"):""; }
 
   var drillItem=drill?items.find(function(x){return x.init.id===drill;}):null;
 
@@ -655,23 +625,23 @@ function App(){
   );
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#e8ebef"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#f7f8fa"}}>
 
-      {/* Standard Planning Hub Header */}
-      <div className="hub-top">
-        <div className="hub-header-card">
-          <div className="hub-header-main">
-            <div className="hub-eyebrow">All of Us Planning Hub · Q3 2026 Capacity</div>
-            <div className="hub-title">Capacity Planning Dashboard</div>
-            <div className="hub-subtitle">Q3 staffing confidence, no-capacity pressure, goal health, and initiative-level performer detail.</div>
-          </div>
-          <div className="hub-actions">
-            <span className={"hub-pill "+(loadState==="live"?"good":"")}>{loadState==="live"?"● Live · "+loadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}</span>
-            <button className="hub-btn primary" onClick={loadAll}>↻ Refresh</button>
-          </div>
+      {/* Standard header — matches QPE and Roadmap */}
+      <div style={{padding:"14px 24px",background:"#fff",borderBottom:"1px solid #ececec",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,gap:12}}>
+        <div style={{minWidth:0}}>
+          <div style={{fontSize:10.5,textTransform:"uppercase",letterSpacing:1.4,color:"#888",fontWeight:600,marginBottom:4}}>NIH · <em>All of Us</em> Research Program · Q3 2026 Capacity Planning</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#111",lineHeight:1.2,letterSpacing:-0.2}}>Capacity Planning Dashboard</div>
         </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,flexWrap:"wrap"}}>
+          {loadState==="live"&&<span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:"#EAF7EF",color:"#1E8449",fontWeight:600}}>● live · {loadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}</span>}
+          <button onClick={loadAll} title="Refresh data" style={{fontSize:11.5,padding:"6px 12px",border:"1px solid #C8DCF0",borderRadius:6,background:"#EBF5FB",color:"#2471A3",cursor:"pointer",fontWeight:500}}>↻ Refresh</button>
+        </div>
+      </div>
 
-        <div className="hub-metric-strip">
+      {/* Metric strip */}
+      <div style={{padding:"12px 24px 8px",background:"#fff",borderBottom:"1px solid #ececec",flexShrink:0}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:10}}>
           {[
             {label:"Total",val:health.total,sub:"initiatives",col:"#4b6378",k:"all",noFilter:true},
             {label:"🟢 On Track",val:health.high,sub:"CI 8–10",col:"#1E8449",k:"high"},
@@ -681,43 +651,44 @@ function App(){
           ].map(function(t){
             var active=tierFilter===t.k&&!t.noFilter;
             return(
-              <div key={t.label} className={"hub-metric "+(!t.noFilter?"clickable ":"")+(active?"active":"")} onClick={function(){if(!t.noFilter)setTierFilter(tierFilter===t.k?"all":t.k);}}>
-                <div className="hub-metric-label" style={{color:t.col}}>{t.label}</div>
-                <div className="hub-metric-value" style={{color:t.col}}>{t.val}</div>
-                <div className="hub-metric-sub" style={{color:t.col}}>{t.sub}</div>
+              <div key={t.label} className={"metric-tile "+(!t.noFilter?"clickable ":"")+(active?"active":"")} onClick={function(){if(!t.noFilter)setTierFilter(tierFilter===t.k?"all":t.k);}}>
+                <div className="metric-label" style={{color:t.col}}>{t.label}</div>
+                <div className="metric-value" style={{color:t.col}}>{t.val}</div>
+                <div className="metric-sub" style={{color:t.col}}>{t.sub}</div>
               </div>
             );
           })}
           {health.avg!=null&&(
-            <div className="hub-metric">
-              <div className="hub-metric-label" style={{color:"#607080"}}>Avg CI</div>
-              <div className="hub-metric-value" style={{color:health.avg>=8?"#1E8449":health.avg>=6?"#B7950B":"#C0392B"}}>{health.avg}</div>
-              <div className="hub-metric-sub" style={{color:"#607080"}}>program avg</div>
+            <div className="metric-tile" title={CI_METHODOLOGY}>
+              <div className="metric-label" style={{color:"#607080"}}>Avg CI</div>
+              <div className="metric-value" style={{color:health.avg>=8?"#1E8449":health.avg>=6?"#B7950B":"#C0392B"}}>{health.avg}</div>
+              <div className="metric-sub" style={{color:"#607080"}}>program avg</div>
             </div>
           )}
         </div>
-
-        <div className="hub-toolbar">
-          <span className="hub-toolbar-label">Filter</span>
-          {[{k:"all",l:"All"},{k:"risk",l:"🔴 At Risk"},{k:"med",l:"🟡 Monitor"},{k:"high",l:"🟢 On Track"},{k:"none",l:"⚪ Awaiting"}].map(function(f){
-            return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} style={{padding:"4px 10px",fontSize:11}} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
-          })}
-          <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} className="sort-sel" style={{fontSize:11,padding:"5px 9px"}}>
-            <option value="all">All Goals</option>
-            {Object.keys(GOALS).map(function(k){return<option key={k} value={k}>G{GOALS[k].num}: {GOALS[k].short}</option>;})}
-          </select>
-          {(search||goalFilter!=="all"||tierFilter!=="all")&&
-            <button onClick={function(){setSearch("");setGoalFilter("all");setTierFilter("all");}}
-              style={{fontSize:11,background:"none",border:"none",color:"#C0392B",cursor:"pointer",fontWeight:700}}>✕ Clear</button>}
-          <div style={{flex:1}}/>
-          <input className="hub-search" value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="🔍  Search…"/>
-          <span className="hub-pill"><strong>{filtered.length}</strong> of {health.total}</span>
-        </div>
       </div>
 
-      {/* ── TWO-COLUMN WORKSPACE: table left, insights right ── */}
-      <div style={{flex:1,display:"grid",gridTemplateColumns:"minmax(0,2fr) 372px",gap:12,padding:"16px 24px",overflow:"hidden",background:"#e8ebef"}}>
-        <div style={{minWidth:0,overflow:"auto",border:"1.5px solid #cdd2da",background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
+      {/* Filter toolbar — matches QPE/Roadmap style */}
+      <div style={{padding:"10px 24px",background:"#fafafa",borderBottom:"1px solid #ececec",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
+        <span style={{fontSize:10,textTransform:"uppercase",color:"#aaa",fontWeight:700,letterSpacing:.05,marginRight:2}}>Filter</span>
+        {[{k:"all",l:"All"},{k:"risk",l:"🔴 At Risk"},{k:"med",l:"🟡 Monitor"},{k:"high",l:"🟢 On Track"},{k:"none",l:"⚪ Awaiting"}].map(function(f){
+          return <button key={f.k} className={"filter-btn"+(tierFilter===f.k?" active":"")} onClick={function(){setTierFilter(f.k);}}>{f.l}</button>;
+        })}
+        <select value={goalFilter} onChange={function(e){setGoalFilter(e.target.value);}} style={{fontSize:11.5,padding:"5px 10px",border:"1px solid "+(goalFilter !== "all" ? "#2471A3" : "#dcdcdc"),borderRadius:18,background:goalFilter !== "all" ? "#EBF5FB" : "#fff",color:goalFilter !== "all" ? "#2471A3" : "#555",fontWeight:goalFilter !== "all" ? 600 : 400}}>
+          <option value="all">All Goals</option>
+          {Object.keys(GOALS).map(function(k){return<option key={k} value={k}>G{GOALS[k].num}: {GOALS[k].short}</option>;})}
+        </select>
+        {(search||goalFilter!=="all"||tierFilter!=="all")&&
+          <button onClick={function(){setSearch("");setGoalFilter("all");setTierFilter("all");}}
+            style={{fontSize:11.5,background:"none",border:"none",color:"#C0392B",cursor:"pointer",fontWeight:600}}>✕ Clear</button>}
+        <div style={{flex:1}}/>
+        <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="🔍  Search…" style={{fontSize:12,padding:"5px 11px",border:"1px solid #dcdcdc",borderRadius:18,width:200}}/>
+        <span style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:"#fff",border:"1px solid #ececec",color:"#888"}}><strong style={{color:"#333"}}>{filtered.length}</strong> of {health.total}</span>
+      </div>
+
+      {/* Two-column workspace */}
+      <div style={{flex:1,display:"grid",gridTemplateColumns:"minmax(0,2fr) 372px",gap:12,padding:"14px 24px",overflow:"hidden",background:"#f7f8fa"}}>
+        <div style={{minWidth:0,overflow:"auto",border:"1px solid #ececec",background:"#fff",borderRadius:10,boxShadow:"0 1px 2px rgba(0,0,0,.03)"}}>
           <table className="tbl tbl-body" style={{tableLayout:"fixed",width:"100%"}}>
             <ColGroup/>
             <thead>
@@ -725,7 +696,7 @@ function App(){
                 {COLS.map(function(c,i){
                   var isActive=sortState.col===c.key;
                   return(
-                    <th key={i} className={c.nosort?"nosort":""}
+                    <th key={i} className={c.nosort?"nosort":""} title={c.tip}
                       style={{position:"sticky",top:0,zIndex:2,padding:c.key==="stripe"?"0":"6px 8px",cursor:c.nosort?"default":"pointer",fontSize:9.5}}
                       onClick={c.nosort?undefined:function(){toggleSort(c.key);}}>
                       {c.th}{!c.nosort&&isActive&&<span style={{opacity:.7}}>{sortState.dir==="asc"?" ↑":" ↓"}</span>}
@@ -757,7 +728,7 @@ function App(){
                     <td>{x.init.status&&sc?<span className="chip" style={{background:sc.bg,color:sc.tx}}>{x.init.status}</span>:<span style={{color:"#ccc",fontSize:10}}>—</span>}</td>
                     <td>
                       {x.cap&&x.cap.ciNum!=null?(
-                        <span className="ci-pill" style={{background:cs.bg,color:cs.tx}}>
+                        <span className="ci-pill" title={CI_METHODOLOGY} style={{background:cs.bg,color:cs.tx}}>
                           <span style={{width:7,height:7,borderRadius:"50%",background:cs.dot,flexShrink:0}}/>CI {x.cap.ciNum}
                         </span>
                       ):<span style={{color:"#ccc",fontSize:10,fontStyle:"italic"}}>awaiting</span>}

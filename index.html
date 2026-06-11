@@ -134,7 +134,7 @@ function ciStyle(n){
   if(t==="risk")return{bg:"#fdf2f2",tx:"#922b21",dot:"#C0392B"};
   return{bg:"#f4f4f4",tx:"#888",dot:"#ccc"};
 }
-
+function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 function cacheBust(u){return u+(u.includes("?")?"&":"?")+"_="+Date.now();}
 
 function parseCSV(text){

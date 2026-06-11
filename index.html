@@ -76,6 +76,7 @@ function statusDisplay(init){
   if(!cfg)return null;
   return{label:s,bg:cfg.bg,tx:cfg.tx};
 }
+function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
 
 // Team order MUST match the column order in the Calculations tab (5 cols per team, starting col N).
 // OFM precedes TPC here — this matches the sheet. Swapping these two caused
@@ -108,7 +109,7 @@ function ciStyle(n){
 }
 
 function cacheBust(u){return u+(u.includes("?")?"&":"?")+"_="+Date.now();}
-function AoU(){ return <em style={{fontStyle:"italic"}}>All of Us</em>; }
+
 function parseCSV(text){
   var rows=[],row=[],cell="",inQ=false;
   for(var i=0;i<text.length;i++){
@@ -138,6 +139,7 @@ function parseSt(r){
   if(/backlog/i.test(s))return"Backlogged";
   if(/complete/i.test(s))return"Complete";
   if(/eliminat/i.test(s))return"Eliminated";
+  if(/concept/i.test(s))return"Concept";
   return null;
 }
 
